@@ -4762,6 +4762,10 @@ MonoBehaviour:
   SpawnPrefab:
   - {fileID: 131954936429578334, guid: cdf5c8c7ed8b4b547ab117948a67accd, type: 3}
   - {fileID: 4813233326855433369, guid: f77d1ca600984b34c85413b65ed84e8c, type: 3}
+  - {fileID: 6637440106093849921, guid: 7fdf6a1ba4955a64593cca1865dba021, type: 3}
+  - {fileID: 8063813816167997246, guid: 0c9e9f4c0cbb92b4289af6d81b95d71c, type: 3}
+  - {fileID: 2413105507753857192, guid: 7a730aa47d6d46b4dbdfceb8d0623658, type: 3}
+  - {fileID: 1050999781447714244, guid: bfc9a9d8e8c878f49ac9b87b259d270d, type: 3}
   NetworkPlayerManager: {fileID: 8628336595158529607, guid: 9a20ea37b419b124ba231117c83909b5, type: 3}
   DefaultReturnScene: 0
 --- !u!4 &216510294
@@ -16166,7 +16170,7 @@ GameObject:
   - component: {fileID: 806582624}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
