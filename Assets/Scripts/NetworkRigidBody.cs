@@ -14,7 +14,7 @@ public class NetworkRigidBody : NetworkComponent
     public Vector3 OffsetVelocity;
 
     public float Threshold = 0.1f;
-    public float EThreshold = 2.5f;
+    public float EThreshold = 0.5f;
     public Rigidbody MyRig;
     public bool UseOffsetVelocity = true;
 
@@ -63,7 +63,7 @@ public class NetworkRigidBody : NetworkComponent
         if(flag == "ROT" && IsClient)
         {
             LastRotation = VectorFromString(value);
-            MyRig.rotation = Quaternion.Euler(LastRotation);
+            //MyRig.rotation = Quaternion.Euler(LastRotation);
         }
         if(flag == "ANG" && IsClient)
         {

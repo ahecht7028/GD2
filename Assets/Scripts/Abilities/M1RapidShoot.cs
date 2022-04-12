@@ -12,9 +12,10 @@ public class M1RapidShoot : Ability
         {
             if (IsServer)
             {
-                // Figure out projectile
-                GameObject temp = MyCore.NetCreateObject(2, Owner, transform.position + transform.forward * 2, Quaternion.identity);
-                temp.GetComponent<Rigidbody>().velocity = transform.forward * 30;
+                Transform camPivot = transform.Find("CameraCenter");
+
+                GameObject temp = MyCore.NetCreateObject(2, Owner, camPivot.position + camPivot.forward * 2, Quaternion.identity);
+                temp.GetComponent<Rigidbody>().velocity = camPivot.forward * 80;
             }
         }
     }

@@ -7,9 +7,11 @@ using NETWORK_ENGINE;
 public class PlayerController : NetworkComponent
 {
     public float movementSpeed;
+    public float sensitivity;
     Ability[] abilities = new Ability[4];
 
     Vector3 LastMove;
+    Vector3 LastRotate;
     Rigidbody rb;
     bool isFiringM1;
     bool isFiringM2;
@@ -28,6 +30,18 @@ public class PlayerController : NetworkComponent
                 string[] args = value.Split(',');
                 Vector2 movement = new Vector2(float.Parse(args[0]), float.Parse(args[1]));
                 LastMove = new Vector3(movement.x, 0, movement.y);
+            }
+        }
+
+        if(flag == "LOOK")
+        {
+            if (IsServer)
+            {
+                string[] args = value.Split(',');
+
+                LastRotate = new Vector3(float.Parse(args[0]), 0, 0);
+                Transform camPivot = transform.Find("CameraCenter");
+                camPivot.localRotation = Quaternion.Euler(new Vector3(float.Parse(args[1]), 0, 0));
             }
         }
     }
@@ -57,6 +71,30 @@ public class PlayerController : NetworkComponent
             LastMove = new Vector3(movement.x, 0, movement.y);
             SendCommand("MOVE", movement.x + "," + movement.y);
         }
+    }
+
+    public void OnLook(InputAction.CallbackContext context)
+    {
+        Vector2 mouseMovement = context.ReadValue<Vector2>();
+
+        if (context.action.phase == InputActionPhase.Started || context.action.phase == InputActionPhase.Performed)
+        {
+            LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
+
+            Transform camPivot = transform.Find("CameraCenter");
+            camPivot.localRotation = Quaternion.Euler(camPivot.eulerAngles.x + -LastRotate.y * sensitivity, 0, 0);
+            rb.rotation = Quaternion.Euler(new Vector3(0, rb.rotation.eulerAngles.y + LastRotate.x * sensitivity, 0));
+            //rb.angularVelocity = new Vector3(0, LastRotate.x * sensitivity * 3, 0);
+
+            SendCommand("LOOK", rb.rotation.eulerAngles.y + "," + camPivot.localRotation.eulerAngles.x);
+        }
+
+        if (context.action.phase == InputActionPhase.Canceled)
+        {
+            LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
+        }
+
+
     }
 
     public void OnFire(InputAction.CallbackContext context)
@@ -180,20 +218,27 @@ public class PlayerController : NetworkComponent
     {
         if (IsServer)
         {
+            rb.rotation = Quaternion.Euler(new Vector3(0, LastRotate.x, 0));
+
             Vector3 forwardMove = transform.forward * LastMove.z * (movementSpeed + dashMod);
             Vector3 sideStepMove = transform.right * LastMove.x * (movementSpeed + dashMod);
-            // rb.velocity = new Vector3((transform.forward * LastMove.x * movementSpeed * Time.deltaTime).x, rb.velocity.y, (transform.forward * LastMove.y * movementSpeed * Time.deltaTime).z);
             rb.velocity = new Vector3(forwardMove.x + sideStepMove.x, rb.velocity.y, forwardMove.z + sideStepMove.z);
+
+            //Transform camPivot = transform.Find("CameraCenter");
+            //camPivot.localRotation = Quaternion.Euler(camPivot.eulerAngles.x + LastRotate.y * sensitivity, 0, 0);
+            //rb.angularVelocity = new Vector3(0, LastRotate.x * sensitivity * 3, 0);
         }
 
         if (IsClient)
         {
-            if (IsLocalPlayer)
+            if (IsLocalPlayer && MyId.IsInit)
             {
                 Transform camTransform = transform.Find("CameraCenter");
-                Vector3 camPos = camTransform.position - 5 * (camTransform.forward) + 2 * camTransform.up;
-                Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 1);
+                Vector3 camPos = camTransform.position - 5 * (camTransform.forward) + camTransform.up;
+                Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 15);
                 Camera.main.transform.LookAt(camTransform);
+
+                Cursor.lockState = CursorLockMode.Locked;
 
                 if (isFiringM1)
                 {
