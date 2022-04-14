@@ -63,7 +63,10 @@ public class NetworkRigidBody : NetworkComponent
         if(flag == "ROT" && IsClient)
         {
             LastRotation = VectorFromString(value);
-            //MyRig.rotation = Quaternion.Euler(LastRotation);
+            if (!IsLocalPlayer)
+            {
+                MyRig.rotation = Quaternion.Euler(LastRotation);
+            }
         }
         if(flag == "ANG" && IsClient)
         {

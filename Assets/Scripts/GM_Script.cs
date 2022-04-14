@@ -7,8 +7,15 @@ using NETWORK_ENGINE;
 
 public class GM_Script : NetworkComponent
 {
+    public enum GAMEPHASE { LOBBY, PVP, PVE };
+
+    public GAMEPHASE currentPhase;
+
     public bool gameStarted;
     public bool gameWon;
+
+    float timer = 0;
+    int roundNum = 0;
 
     public override void HandleMessage(string flag, string value)
     {
@@ -114,6 +121,7 @@ public class GM_Script : NetworkComponent
     {
         gameStarted = false;
         gameWon = false;
+        currentPhase = GAMEPHASE.LOBBY;
     }
 
     // Update is called once per frame
