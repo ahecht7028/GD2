@@ -6,7 +6,25 @@ using NETWORK_ENGINE;
 
 public class PlayerController : NetworkComponent
 {
-    public float movementSpeed;
+    [Header("Stats")]
+    // Stats
+    public float attackSpeed = 1f;
+    public float movementSpeed = 1f;
+    public float damage = 1f;
+    public float maxHealthMod = 1f;
+    public float regen = 0.1f;
+    public float critChance = 0.05f;
+    public int level = 1;
+    public int exp = 0;
+
+    public float maxHealth = 100f;
+    public float health = 100f;
+
+    public Item[] items = new Item[50];
+
+    [Header("Core Variables")]
+    // Core
+    public float movementMod;
     public float sensitivity;
     Ability[] abilities = new Ability[4];
 
@@ -114,7 +132,7 @@ public class PlayerController : NetworkComponent
         {
             if (context.action.phase == InputActionPhase.Started)
             {
-                abilities[0].UseAbility();
+                abilities[0].UseAbility(this);
             }
         }
     }
@@ -136,7 +154,7 @@ public class PlayerController : NetworkComponent
         {
             if (context.action.phase == InputActionPhase.Started)
             {
-                abilities[2].UseAbility();
+                abilities[2].UseAbility(this);
             }
         }
     }
@@ -158,7 +176,7 @@ public class PlayerController : NetworkComponent
         {
             if (context.action.phase == InputActionPhase.Started)
             {
-                abilities[1].UseAbility();
+                abilities[1].UseAbility(this);
             }
         }
     }
@@ -180,7 +198,7 @@ public class PlayerController : NetworkComponent
         {
             if (context.action.phase == InputActionPhase.Started)
             {
-                abilities[3].UseAbility();
+                abilities[3].UseAbility(this);
             }
         }
     }
@@ -190,6 +208,71 @@ public class PlayerController : NetworkComponent
         dashMod = 80;
         yield return new WaitForSeconds(0.2f);
         dashMod = 0;
+    }
+
+    public void GetPassiveStats()
+    {
+        attackSpeed = 1f;
+        movementSpeed = 1f;
+        damage = 1f;
+        maxHealthMod = 1f;
+        regen = 0.1f;
+        critChance = 0.05f;
+
+        for(int i = 0; i < items.Length; i++)
+        {
+            if(items[i] == null)
+            {
+                continue;
+            }
+
+            items[i].Passive(this);
+        }
+    }
+
+    public void OnShoot()
+    {
+        GetPassiveStats();
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+            {
+                continue;
+            }
+
+            items[i].OnShoot(this);
+        }
+    }
+
+    public void OnTakeDamage()
+    {
+        GetPassiveStats();
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+            {
+                continue;
+            }
+
+            items[i].OnTakeDamage(this);
+        }
+    }
+
+    public void OnHit()
+    {
+        GetPassiveStats();
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+            {
+                continue;
+            }
+
+            items[i].OnHit(this);
+        }
     }
 
     // Start is called before the first frame update
@@ -220,8 +303,8 @@ public class PlayerController : NetworkComponent
         {
             rb.rotation = Quaternion.Euler(new Vector3(0, LastRotate.x, 0));
 
-            Vector3 forwardMove = transform.forward * LastMove.z * (movementSpeed + dashMod);
-            Vector3 sideStepMove = transform.right * LastMove.x * (movementSpeed + dashMod);
+            Vector3 forwardMove = transform.forward * LastMove.z * (movementMod + dashMod) * movementSpeed;
+            Vector3 sideStepMove = transform.right * LastMove.x * (movementMod + dashMod) * movementSpeed;
             rb.velocity = new Vector3(forwardMove.x + sideStepMove.x, rb.velocity.y, forwardMove.z + sideStepMove.z);
 
             //Transform camPivot = transform.Find("CameraCenter");
@@ -242,19 +325,19 @@ public class PlayerController : NetworkComponent
 
                 if (isFiringM1)
                 {
-                    abilities[0].UseAbility();
+                    abilities[0].UseAbility(this);
                 }
                 if (isFiringM2)
                 {
-                    abilities[1].UseAbility();
+                    abilities[1].UseAbility(this);
                 }
                 if (isFiringUtility)
                 {
-                    abilities[2].UseAbility();
+                    abilities[2].UseAbility(this);
                 }
                 if (isFiringSpecial)
                 {
-                    abilities[3].UseAbility();
+                    abilities[3].UseAbility(this);
                 }
             }
         }

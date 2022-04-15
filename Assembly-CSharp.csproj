@@ -56,21 +56,28 @@
     <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Shop.cs" />
     <Compile Include="Assets\Scripts\NetPM.cs" />
     <Compile Include="Assets\Scripts\NetworkTransform.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability Spawns\Grenade.cs" />
+    <Compile Include="Assets\Scripts\Enemy\RedBox.cs" />
     <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\Scripts\Abilities\UtilityDash.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\NetworkEngine\GameManagerTemplate.cs" />
+    <Compile Include="Assets\Scripts\Enemy\Drone.cs" />
     <Compile Include="Assets\Scripts\Abilities\M2Slash.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\TemplateAssets\MenuItems\GameRoomButtonPrefab\Scripts\GameRoomButton.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability Spawns\RapidShotPellet.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\NetworkEngine\NetworkID\NetworkID.cs" />
+    <Compile Include="Assets\Scripts\Enemy\Enemy.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\AxisCallbackSystem\AxisEventSystem.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability Spawns\Explosion.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
+    <Compile Include="Assets\Scripts\Enemy\BlueBox.cs" />
+    <Compile Include="Assets\Scripts\Enemy\Spider.cs" />
     <Compile Include="Assets\Scripts\NetworkRigidBody.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\TemplateAssets\MenuItems\MainMenuController.cs" />
+    <Compile Include="Assets\Scripts\Items\Item.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\NetworkEngine\NetworkCore\NetworkCore.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability Spawns\SlashAttack.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\NetworkEngine\GenericNetworkCore\GenericNetworkCore.cs" />
@@ -85,12 +92,6 @@
     <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\Player.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\ThirdPersonCamera.cs" />
-    <Compile Include="Assets\Scripts\Enemy\Enemy.cs" />
-    <Compile Include="Assets\Scripts\Enemy\RedBox.cs" />
-    <Compile Include="Assets\Scripts\Enemy\BlueBox.cs" />
-    <Compile Include="Assets\Scripts\Enemy\Spider.cs" />
-    <Compile Include="Assets\Scripts\Enemy\Drone.cs" />
-    <Compile Include="Assets\Scripts\Shop.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\ImportedAssets\Day-Night Skyboxes\Textures\Readme for Assigning.txt" />

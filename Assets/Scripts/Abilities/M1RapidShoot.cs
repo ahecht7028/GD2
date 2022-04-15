@@ -16,13 +16,16 @@ public class M1RapidShoot : Ability
 
                 GameObject temp = MyCore.NetCreateObject(2, Owner, camPivot.position + camPivot.forward * 2, Quaternion.identity);
                 temp.GetComponent<Rigidbody>().velocity = camPivot.forward * 80;
+                temp.GetComponent<RapidShotPellet>().damage *= float.Parse(value);
             }
         }
     }
 
-    public override void ActivateAbility()
+    public override void ActivateAbility(PlayerController player)
     {
-        SendCommand("SHOOT", "1");
+        player.OnShoot();
+        cooldownTime = 0.4f / player.attackSpeed;
+        SendCommand("SHOOT", CalculateDamage(player).ToString());
     }
 
     // Start is called before the first frame update

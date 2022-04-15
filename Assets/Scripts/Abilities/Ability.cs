@@ -23,17 +23,28 @@ public abstract class Ability : NetworkComponent
         }
     }
 
-    public void UseAbility()
+    public void UseAbility(PlayerController player)
     {
         if(cooldownTime <= currentTime)
         {
-            ActivateAbility();
+            ActivateAbility(player);
             currentTime = 0;
         }
     }
 
-    public virtual void ActivateAbility()
+    public virtual void ActivateAbility(PlayerController player)
     {
 
+    }
+
+    public float CalculateDamage(PlayerController player)
+    {
+        float critMod = 1f;
+
+        if(Random.Range(0f, 1f) < player.critChance)
+        {
+            critMod = 2f;
+        }
+        return (player.damage * (player.level / 10.0f)) * critMod;
     }
 }

@@ -5,6 +5,8 @@ using NETWORK_ENGINE;
 
 public class Grenade : NetworkComponent
 {
+    public float damage = 50f;
+
     bool isExploding;
 
     public override void HandleMessage(string flag, string value)
@@ -34,7 +36,8 @@ public class Grenade : NetworkComponent
     IEnumerator Explode()
     {
         yield return new WaitForSeconds(1.5f);
-        MyCore.NetCreateObject(5, Owner, transform.position, Quaternion.identity);
+        GameObject temp = MyCore.NetCreateObject(5, Owner, transform.position, Quaternion.identity);
+        temp.GetComponent<Explosion>().damage = damage;
         MyCore.NetDestroyObject(MyId.NetId);
     }
 

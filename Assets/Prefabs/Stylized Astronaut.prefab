@@ -719,7 +719,17 @@ MonoBehaviour:
   MyCore: {fileID: 0}
   MyId: {fileID: 0}
   IsDirty: 0
+  attackSpeed: 1
   movementSpeed: 10
+  damage: 1
+  maxHealthMod: 1
+  regen: 0.1
+  critChance: 0.05
+  level: 1
+  exp: 0
+  maxHealth: 100
+  health: 100
+  movementMod: 5
   sensitivity: 0.2
 --- !u!1 &5231715732174872281
 GameObject:

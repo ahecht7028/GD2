@@ -13,13 +13,16 @@ public class SpecialGrenade : Ability
             {
                 GameObject temp = MyCore.NetCreateObject(4, Owner, transform.position + transform.forward * 2, Quaternion.identity);
                 temp.GetComponent<Rigidbody>().velocity = transform.forward * 30 + transform.up * 10;
+                temp.GetComponent<Grenade>().damage *= float.Parse(value);
             }
         }
     }
 
-    public override void ActivateAbility()
+    public override void ActivateAbility(PlayerController player)
     {
-        SendCommand("THROW", "1");
+        player.OnShoot();
+        cooldownTime = 1f / player.attackSpeed;
+        SendCommand("THROW", CalculateDamage(player).ToString());
     }
 
     // Start is called before the first frame update

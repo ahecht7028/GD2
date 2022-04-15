@@ -5,6 +5,8 @@ using NETWORK_ENGINE;
 
 public class SlashAttack : NetworkComponent
 {
+    public float damage = 30f;
+
     Transform playerRef;
     Rigidbody rb;
 

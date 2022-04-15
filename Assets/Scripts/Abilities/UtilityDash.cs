@@ -17,8 +17,10 @@ public class UtilityDash : Ability
         }
     }
 
-    public override void ActivateAbility()
+    public override void ActivateAbility(PlayerController player)
     {
+        player.OnShoot();
+        cooldownTime = 2f / player.attackSpeed;
         SendCommand("DASH", "1");
     }
 

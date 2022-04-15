@@ -5,6 +5,8 @@ using NETWORK_ENGINE;
 
 public class RapidShotPellet : NetworkComponent
 {
+    public float damage = 10f;
+
     public override void HandleMessage(string flag, string value)
     {
 
