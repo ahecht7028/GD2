@@ -195,10 +195,14 @@ public class GM_Script : NetworkComponent
                     break;
 
                 case GAMEPHASE.PVP:
-                    for (int i = 0; i < players.Length; i++)
+                    int firstPlayer = Random.Range(0, players.Length);
+                    int secondPlayer = Random.Range(0, players.Length);
+                    while(firstPlayer == secondPlayer)
                     {
-                        players[i].transform.position = PVEPosList[i].position; // Change this when we figure out PVP layout ////////////////////////////
+                        secondPlayer = Random.Range(0, players.Length);
                     }
+                    players[firstPlayer].transform.position = PVPPosList[0].position;
+                    players[secondPlayer].transform.position = PVPPosList[1].position;
                     break;
             }
             SendUpdate("SET_TIMER", "");

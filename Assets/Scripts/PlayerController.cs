@@ -14,6 +14,8 @@ public class PlayerController : NetworkComponent
     public float maxHealthMod = 1f;
     public float regen = 0.1f;
     public float critChance = 0.05f;
+    public int lives = 3;
+    public int money = 0;
     public int level = 1;
     public int exp = 0;
 
@@ -72,6 +74,33 @@ public class PlayerController : NetworkComponent
     public override IEnumerator SlowUpdate()
     {
         yield return new WaitForSeconds(0.1f);
+    }
+
+    public void TakeDamage(float _damage, int _owner)
+    {
+        health -= _damage;
+        if(health < 0)
+        {
+            health = 0;
+        }
+
+        if(health == 0)
+        {
+            // Die
+            lives--;
+            foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                if(player.Owner == _owner)
+                {
+                    money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                    break;
+                }
+            }
+            if(lives <= 0)
+            {
+                // Player is eliminated
+            }
+        }
     }
 
     public void OnMove(InputAction.CallbackContext context)
