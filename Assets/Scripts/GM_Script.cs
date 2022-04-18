@@ -14,23 +14,36 @@ public class GM_Script : NetworkComponent
     Transform[] PVPPosList;
     Transform[] enemyPosList;
 
+    // Scene objects
+    GameObject playerCanvas;
+
+    GameObject playerWinObj;
+    GameObject moneyText;
+    GameObject livesText;
+    GameObject levelText;
+    GameObject healthBar;
+    GameObject expBar;
+
     public enum GAMEPHASE { LOBBY, PVP, PVE };
 
     public GAMEPHASE currentPhase;
 
     public bool gameStarted;
     public bool gameWon;
+    public bool pvpDone = false;
 
     float timer = 30;
     int roundNum = 1;
+    int gameWinner = 0;
 
     public override void HandleMessage(string flag, string value)
     {
         if (flag == "GAMESTART")
         {
             gameStarted = true;
+            playerCanvas.SetActive(true);
 
-            foreach(NetPM npm in FindObjectsOfType<NetPM>())
+            foreach (NetPM npm in FindObjectsOfType<NetPM>())
             {
                 npm.transform.Find("Canvas").gameObject.SetActive(false);
             }
@@ -50,11 +63,39 @@ public class GM_Script : NetworkComponent
                 NextPhase();
             }
         }
+        if(flag == "SHOW_WINNER")
+        {
+            playerWinObj.SetActive(true);
+            string winnerName = "<NAME>";
+            foreach (NetPM npm in FindObjectsOfType<NetPM>())
+            {
+                if (npm.Owner == int.Parse(value))
+                {
+                    winnerName = npm.pName;
+                }
+            }
+            playerWinObj.GetComponent<Text>().text = winnerName + " Wins!";
+        }
+        if(flag == "PVP")
+        {
+            foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                player.pvpEnabled = bool.Parse(value);
+            }
+        }
+        if(flag == "RESET_HEALTH")
+        {
+            foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                player.health = player.maxHealth;
+            }
+        }
     }
 
     public override void NetworkedStart()
     {
-        
+        playerCanvas = GameObject.Find("PlayerCanvas");
+        playerCanvas.SetActive(false);
     }
 
     public override IEnumerator SlowUpdate()
@@ -79,6 +120,7 @@ public class GM_Script : NetworkComponent
             gameStarted = readyGo;
             yield return new WaitForSeconds(1);
         }
+
         if (IsServer)
         {
             SendUpdate("GAMESTART", gameStarted.ToString());
@@ -144,6 +186,24 @@ public class GM_Script : NetworkComponent
         timerText.text = ((int)timer).ToString();
     }
 
+    public void EnablePVP(bool on)
+    {
+        foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+        {
+            player.pvpEnabled = on;
+        }
+        SendUpdate("PVP", on.ToString());
+    }
+
+    public void ResetHealth()
+    {
+        foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+        {
+            player.health = player.maxHealth;
+        }
+        SendUpdate("RESET_HEALTH", "");
+    }
+
     public void NextPhase()
     {
         switch (currentPhase)
@@ -151,26 +211,34 @@ public class GM_Script : NetworkComponent
             case GAMEPHASE.LOBBY:
                 if((roundNum + 1) % 4 == 0)
                 {
+                    pvpDone = false;
+                    EnablePVP(true);
                     currentPhase = GAMEPHASE.PVP;
                 }
                 else
                 {
+                    EnablePVP(false);
                     currentPhase = GAMEPHASE.PVE;
                 }
 
                 // Override other cases
                 if(roundNum > 10)
                 {
+                    pvpDone = false;
+                    EnablePVP(true);
                     currentPhase = GAMEPHASE.PVP;
                 }
                 break;
             case GAMEPHASE.PVE:
+                EnablePVP(false);
                 currentPhase = GAMEPHASE.LOBBY;
                 break;
             case GAMEPHASE.PVP:
+                EnablePVP(false);
                 currentPhase = GAMEPHASE.LOBBY;
                 break;
         }
+        ResetHealth();
         roundNum++;
 
         SetTimer();
@@ -258,11 +326,60 @@ public class GM_Script : NetworkComponent
 
     }
 
+    public void CheckWin()
+    {
+        int alivePlayers = 0;
+        int winnerOwner = 0;
+        foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+        {
+            if (player.isAlive)
+            {
+                alivePlayers++;
+                winnerOwner = player.Owner;
+            }
+        }
+
+        if(alivePlayers == 1)
+        {
+            // winnerOwner player wins
+            gameWinner = winnerOwner;
+            playerWinObj.SetActive(true);
+            string winnerName = "<NAME>";
+            foreach(NetPM npm in FindObjectsOfType<NetPM>())
+            {
+                if(npm.Owner == gameWinner)
+                {
+                    winnerName = npm.pName;
+                }
+            }
+            playerWinObj.GetComponent<Text>().text = winnerName + " Wins!";
+            SendUpdate("SHOW_WINNER", gameWinner.ToString());
+            WinGame();
+        }
+    }
+
+    public void UpdatePlayerUI(string money, string lives, string level, float healthPercent, float expPercent)
+    {
+        moneyText.GetComponent<Text>().text = money;
+        livesText.GetComponent<Text>().text = lives;
+        levelText.GetComponent<Text>().text = level;
+        healthBar.GetComponent<Image>().fillAmount = healthPercent;
+        expBar.GetComponent<Image>().fillAmount = expPercent;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         timerText = GameObject.Find("Scoreboard/Canvas/Timer").GetComponent<Text>();
         roundNumText = GameObject.Find("Scoreboard/Canvas/RoundNum").GetComponent<Text>();
+        playerWinObj = GameObject.Find("PlayerCanvas/PlayerWin/Text");
+        moneyText = GameObject.Find("PlayerCanvas/Stats/Money/Text");
+        livesText = GameObject.Find("PlayerCanvas/Stats/Lives/Text");
+        levelText = GameObject.Find("PlayerCanvas/Bars/Level/Text");
+        healthBar = GameObject.Find("PlayerCanvas/Bars/HealthBar/Fill");
+        expBar = GameObject.Find("PlayerCanvas/Bars/EXPBar/Fill");
+        playerWinObj.SetActive(false);
+
         gameStarted = false;
         gameWon = false;
         currentPhase = GAMEPHASE.LOBBY;
@@ -272,7 +389,7 @@ public class GM_Script : NetworkComponent
     // Update is called once per frame
     void Update()
     {
-        if (gameStarted)
+        if (gameStarted && !gameWon)
         {
             timer -= Time.deltaTime;
             if (timer < 0)
@@ -282,7 +399,7 @@ public class GM_Script : NetworkComponent
             UpdateUI();
             if (IsServer)
             {
-                if (timer <= 0)
+                if (timer <= 0 || (pvpDone && currentPhase == GAMEPHASE.PVP))
                 {
                     timer = 30;
                     NextPhase();

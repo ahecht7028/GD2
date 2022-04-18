@@ -5,7 +5,7 @@ using NETWORK_ENGINE;
 
 public class RapidShotPellet : NetworkComponent
 {
-    public float damage = 10f;
+    public float damage = 100f;
 
     public override void HandleMessage(string flag, string value)
     {
@@ -27,7 +27,10 @@ public class RapidShotPellet : NetworkComponent
     {
         if (IsServer)
         {
-
+            if(other.gameObject.tag == "Player")
+            {
+                other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+            }
 
             MyCore.NetDestroyObject(MyId.NetId);
         }

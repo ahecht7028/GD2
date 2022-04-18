@@ -59,4 +59,12 @@ public class SlashAttack : NetworkComponent
         // transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + 20 * Time.deltaTime, transform.eulerAngles.z);
         transform.position = playerRef.position + playerRef.forward * 2;
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+        }
+    }
 }

@@ -36,4 +36,12 @@ public class Explosion : NetworkComponent
     {
         
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+        }
+    }
 }

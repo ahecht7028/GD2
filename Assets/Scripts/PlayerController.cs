@@ -18,6 +18,7 @@ public class PlayerController : NetworkComponent
     public int money = 0;
     public int level = 1;
     public int exp = 0;
+    public bool isAlive = true;
 
     public float maxHealth = 100f;
     public float health = 100f;
@@ -28,6 +29,7 @@ public class PlayerController : NetworkComponent
     // Core
     public float movementMod;
     public float sensitivity;
+    public bool pvpEnabled = false;
     Ability[] abilities = new Ability[4];
 
     Vector3 LastMove;
@@ -64,6 +66,53 @@ public class PlayerController : NetworkComponent
                 camPivot.localRotation = Quaternion.Euler(new Vector3(float.Parse(args[1]), 0, 0));
             }
         }
+
+        if(flag == "DAMAGE")
+        {
+            string[] args = value.Split(',');
+
+            float _damage = float.Parse(args[0]);
+            int _owner = int.Parse(args[1]);
+            bool _playerOwned = bool.Parse(args[2]);
+
+            if (!pvpEnabled && _playerOwned)
+            {
+                return;
+            }
+
+            health -= _damage;
+            if (health < 0)
+            {
+                health = 0;
+            }
+
+            if (health == 0)
+            {
+                // Die
+                lives--;
+                if (_playerOwned)
+                {
+                    foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+                    {
+                        if (player.Owner == _owner)
+                        {
+                            money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                            break;
+                        }
+                    }
+                }
+                FindObjectOfType<GM_Script>().pvpDone = true;
+                if (lives <= 0)
+                {
+                    // Player is eliminated
+                    isAlive = false;
+                }
+                else
+                {
+                    health = maxHealth;
+                }
+            }
+        }
     }
 
     public override void NetworkedStart()
@@ -76,8 +125,15 @@ public class PlayerController : NetworkComponent
         yield return new WaitForSeconds(0.1f);
     }
 
-    public void TakeDamage(float _damage, int _owner)
+    public void TakeDamage(float _damage, int _owner, bool _playerOwned)
     {
+        if (!pvpEnabled && _playerOwned)
+        {
+            return;
+        }
+
+        SendUpdate("DAMAGE", _damage + "," + _owner + "," + _playerOwned);
+
         health -= _damage;
         if(health < 0)
         {
@@ -88,59 +144,76 @@ public class PlayerController : NetworkComponent
         {
             // Die
             lives--;
-            foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+            if (_playerOwned)
             {
-                if(player.Owner == _owner)
+                foreach (PlayerController player in FindObjectsOfType<PlayerController>())
                 {
-                    money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
-                    break;
+                    if (player.Owner == _owner)
+                    {
+                        money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                        break;
+                    }
                 }
             }
+            FindObjectOfType<GM_Script>().pvpDone = true;
             if(lives <= 0)
             {
                 // Player is eliminated
+                isAlive = false;
+
+                // Check if game has ended
+                FindObjectOfType<GM_Script>().CheckWin();
+            }
+            else
+            {
+                health = maxHealth;
             }
         }
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        Vector2 movement = context.ReadValue<Vector2>();
-
-        if(context.action.phase == InputActionPhase.Started || context.action.phase == InputActionPhase.Performed)
+        if (IsLocalPlayer)
         {
-            LastMove = new Vector3(movement.x, 0, movement.y);
-            SendCommand("MOVE", movement.x + "," + movement.y);
-        }
+            Vector2 movement = context.ReadValue<Vector2>();
 
-        if(context.action.phase == InputActionPhase.Canceled)
-        {
-            LastMove = new Vector3(movement.x, 0, movement.y);
-            SendCommand("MOVE", movement.x + "," + movement.y);
+            if (context.action.phase == InputActionPhase.Started || context.action.phase == InputActionPhase.Performed)
+            {
+                LastMove = new Vector3(movement.x, 0, movement.y);
+                SendCommand("MOVE", movement.x + "," + movement.y);
+            }
+
+            if (context.action.phase == InputActionPhase.Canceled)
+            {
+                LastMove = new Vector3(movement.x, 0, movement.y);
+                SendCommand("MOVE", movement.x + "," + movement.y);
+            }
         }
     }
 
     public void OnLook(InputAction.CallbackContext context)
     {
-        Vector2 mouseMovement = context.ReadValue<Vector2>();
-
-        if (context.action.phase == InputActionPhase.Started || context.action.phase == InputActionPhase.Performed)
+        if (IsLocalPlayer)
         {
-            LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
+            Vector2 mouseMovement = context.ReadValue<Vector2>();
 
-            Transform camPivot = transform.Find("CameraCenter");
-            camPivot.localRotation = Quaternion.Euler(camPivot.eulerAngles.x + -LastRotate.y * sensitivity, 0, 0);
-            rb.rotation = Quaternion.Euler(new Vector3(0, rb.rotation.eulerAngles.y + LastRotate.x * sensitivity, 0));
-            //rb.angularVelocity = new Vector3(0, LastRotate.x * sensitivity * 3, 0);
+            if (context.action.phase == InputActionPhase.Started || context.action.phase == InputActionPhase.Performed)
+            {
+                LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
 
-            SendCommand("LOOK", rb.rotation.eulerAngles.y + "," + camPivot.localRotation.eulerAngles.x);
+                Transform camPivot = transform.Find("CameraCenter");
+                camPivot.localRotation = Quaternion.Euler(camPivot.eulerAngles.x + -LastRotate.y * sensitivity, 0, 0);
+                rb.rotation = Quaternion.Euler(new Vector3(0, rb.rotation.eulerAngles.y + LastRotate.x * sensitivity, 0));
+                //rb.angularVelocity = new Vector3(0, LastRotate.x * sensitivity * 3, 0);
+
+                SendCommand("LOOK", rb.rotation.eulerAngles.y + "," + camPivot.localRotation.eulerAngles.x);
+            }
+
+            if (context.action.phase == InputActionPhase.Canceled)
+            {
+                LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
+            }
         }
-
-        if (context.action.phase == InputActionPhase.Canceled)
-        {
-            LastRotate = new Vector3(mouseMovement.x, mouseMovement.y, 0);
-        }
-
 
     }
 
@@ -368,6 +441,8 @@ public class PlayerController : NetworkComponent
                 {
                     abilities[3].UseAbility(this);
                 }
+
+                FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)));
             }
         }
     }

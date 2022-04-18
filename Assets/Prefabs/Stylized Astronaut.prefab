@@ -424,7 +424,7 @@ GameObject:
   - component: {fileID: 2657999411588051736}
   m_Layer: 0
   m_Name: Stylized Astronaut
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -720,17 +720,21 @@ MonoBehaviour:
   MyId: {fileID: 0}
   IsDirty: 0
   attackSpeed: 1
-  movementSpeed: 10
+  movementSpeed: 1
   damage: 1
   maxHealthMod: 1
   regen: 0.1
   critChance: 0.05
+  lives: 3
+  money: 0
   level: 1
   exp: 0
+  isAlive: 1
   maxHealth: 100
   health: 100
   movementMod: 5
   sensitivity: 0.2
+  pvpEnabled: 0
 --- !u!1 &5231715732174872281
 GameObject:
   m_ObjectHideFlags: 0
