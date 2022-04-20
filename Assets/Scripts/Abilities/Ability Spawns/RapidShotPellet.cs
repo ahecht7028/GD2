@@ -32,6 +32,10 @@ public class RapidShotPellet : NetworkComponent
                 other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
             }
 
+            if(other.gameObject.tag == "Enemy")
+            {
+                other.GetComponent<Enemy>().TakeDamage(damage, Owner);
+            }
             MyCore.NetDestroyObject(MyId.NetId);
         }
     }

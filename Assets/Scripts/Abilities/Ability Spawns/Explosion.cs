@@ -34,7 +34,7 @@ public class Explosion : NetworkComponent
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -42,6 +42,10 @@ public class Explosion : NetworkComponent
         if (other.gameObject.tag == "Player")
         {
             other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+        }
+        if (other.gameObject.tag == "Enemy")
+        {
+            other.GetComponent<Enemy>().TakeDamage(damage, Owner);
         }
     }
 }

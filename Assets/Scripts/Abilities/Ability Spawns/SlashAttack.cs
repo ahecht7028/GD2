@@ -66,5 +66,9 @@ public class SlashAttack : NetworkComponent
         {
             other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
         }
+        if (other.gameObject.tag == "Enemy")
+        {
+            other.GetComponent<Enemy>().TakeDamage(damage, Owner);
+        }
     }
 }
