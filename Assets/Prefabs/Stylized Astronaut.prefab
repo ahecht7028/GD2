@@ -699,6 +699,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: c179cbec-1ee0-4b18-9327-595a70f9c53c
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2657999411588051736}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnJump
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 06a2709b-710d-4e78-995c-b10d47e1a8b0
+    m_ActionName: Player/Jump[/Keyboard/space]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -735,6 +751,9 @@ MonoBehaviour:
   movementMod: 5
   sensitivity: 0.2
   pvpEnabled: 0
+  canJump: 1
+  baseMat: {fileID: 2100000, guid: e84edb65565907c4aa17f9f900fe5b49, type: 2}
+  redFlash: {fileID: 2100000, guid: 76fc48273f4a88043bc6afcf3e349102, type: 2}
 --- !u!1 &5231715732174872281
 GameObject:
   m_ObjectHideFlags: 0

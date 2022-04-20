@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using NETWORK_ENGINE;
 
@@ -24,12 +25,15 @@ public class PlayerController : NetworkComponent
     public float health = 100f;
 
     public Item[] items = new Item[50];
+    public GameObject itemDisplayPrefab;
+    GameObject[] itemDisplay = new GameObject[20];
 
     [Header("Core Variables")]
     // Core
     public float movementMod;
     public float sensitivity;
     public bool pvpEnabled = false;
+    public bool canJump = true;
     Ability[] abilities = new Ability[4];
 
     Vector3 LastMove;
@@ -39,9 +43,13 @@ public class PlayerController : NetworkComponent
     bool isFiringM2;
     bool isFiringUtility;
     bool isFiringSpecial;
+    bool isFlashing = false;
 
     // Special Modifiers
     float dashMod = 0;
+
+    public Material baseMat;
+    public Material redFlash;
 
     public override void HandleMessage(string flag, string value)
     {
@@ -67,13 +75,17 @@ public class PlayerController : NetworkComponent
             }
         }
 
+        if(flag == "JUMP")
+        {
+            rb.AddForce(new Vector3(0, 200, 0));
+        }
+
         if(flag == "DAMAGE")
         {
             string[] args = value.Split(',');
 
             float _damage = float.Parse(args[0]);
-            int _owner = int.Parse(args[1]);
-            bool _playerOwned = bool.Parse(args[2]);
+            bool _playerOwned = bool.Parse(args[1]);
 
             if (!pvpEnabled && _playerOwned)
             {
@@ -86,31 +98,41 @@ public class PlayerController : NetworkComponent
                 health = 0;
             }
 
-            if (health == 0)
+            if(health != 0)
             {
-                // Die
-                lives--;
-                if (_playerOwned)
+                StartCoroutine(FlashRed());
+            }
+        }
+
+        if(flag == "DEATH")
+        {
+            string[] args = value.Split(',');
+
+            int _owner = int.Parse(args[0]);
+            bool _playerOwned = bool.Parse(args[1]);
+
+            // Die
+            lives--;
+            if (_playerOwned)
+            {
+                foreach (PlayerController player in FindObjectsOfType<PlayerController>())
                 {
-                    foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+                    if (player.Owner == _owner)
                     {
-                        if (player.Owner == _owner)
-                        {
-                            money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
-                            break;
-                        }
+                        player.money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                        break;
                     }
                 }
-                FindObjectOfType<GM_Script>().pvpDone = true;
-                if (lives <= 0)
-                {
-                    // Player is eliminated
-                    isAlive = false;
-                }
-                else
-                {
-                    health = maxHealth;
-                }
+            }
+            FindObjectOfType<GM_Script>().pvpDone = true;
+            if (lives <= 0)
+            {
+                // Player is eliminated
+                isAlive = false;
+            }
+            else
+            {
+                health = maxHealth;
             }
         }
     }
@@ -132,7 +154,7 @@ public class PlayerController : NetworkComponent
             return;
         }
 
-        SendUpdate("DAMAGE", _damage + "," + _owner + "," + _playerOwned);
+        SendUpdate("DAMAGE", _damage + "," + _playerOwned);
 
         health -= _damage;
         if(health < 0)
@@ -142,6 +164,7 @@ public class PlayerController : NetworkComponent
 
         if(health == 0)
         {
+            SendUpdate("DEATH", _owner + "," + _playerOwned);
             // Die
             lives--;
             if (_playerOwned)
@@ -215,6 +238,18 @@ public class PlayerController : NetworkComponent
             }
         }
 
+    }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (IsLocalPlayer)
+        {
+            if(context.action.phase == InputActionPhase.Started && canJump)
+            {
+                SendCommand("JUMP", "");
+                canJump = false;
+            }
+        }
     }
 
     public void OnFire(InputAction.CallbackContext context)
@@ -444,6 +479,67 @@ public class PlayerController : NetworkComponent
 
                 FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)));
             }
+        }
+    }
+
+    public IEnumerator FlashRed()
+    {
+        if (!isFlashing)
+        {
+            isFlashing = true;
+            SkinnedMeshRenderer mr = transform.Find("Player").GetComponent<SkinnedMeshRenderer>();
+            Material[] mats = mr.materials;
+
+            for (int i = 0; i < 10; i++)
+            {
+                mats[1] = redFlash;
+                mr.materials = mats;
+                yield return new WaitForSeconds(0.03f);
+                mats[1] = baseMat;
+                mr.materials = mats;
+                yield return new WaitForSeconds(0.03f);
+            }
+
+            isFlashing = false;
+        }
+        yield return null;
+    }
+
+    public void UpdateItems()
+    {
+        GameObject itemObj = GameObject.Find("PlayerCanvas/Items");
+
+        // Delete existing items
+        for(int i = 0; i < itemDisplay.Length; i++)
+        {
+            if(itemDisplay[i] != null)
+            {
+                Destroy(itemDisplay[i]);
+            }
+        }
+
+        // Display new items
+        for(int i = 0; i < items.Length; i++)
+        {
+            itemDisplay[i] = Instantiate(itemDisplayPrefab, itemObj.transform);
+            //itemDisplay[i].GetComponent<Image>().sprite = items[i].GetSprite();
+            itemDisplay[i].transform.Find("Count").GetComponent<Text>().text = "x" + items[i].stacks;
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.tag == "GROUND")
+        {
+            canJump = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.tag == "GROUND")
+        {
+            canJump = false;
         }
     }
 }

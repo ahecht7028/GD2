@@ -78,10 +78,13 @@ public class GM_Script : NetworkComponent
         }
         if(flag == "PVP")
         {
-            foreach (PlayerController player in FindObjectsOfType<PlayerController>())
-            {
-                player.pvpEnabled = bool.Parse(value);
-            }
+            string[] args = value.Split(',');
+
+            bool on = bool.Parse(args[0]);
+            int p1 = int.Parse(args[1]);
+            int p2 = int.Parse(args[2]);
+
+            EnablePVP(on, p1, p2);
         }
         if(flag == "RESET_HEALTH")
         {
@@ -186,13 +189,29 @@ public class GM_Script : NetworkComponent
         timerText.text = ((int)timer).ToString();
     }
 
-    public void EnablePVP(bool on)
+    public void EnablePVP(bool on, int p1 = 0, int p2 = 0)
     {
-        foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+        if (!on)
         {
-            player.pvpEnabled = on;
+            foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                player.pvpEnabled = on;
+            }
         }
-        SendUpdate("PVP", on.ToString());
+        else
+        {
+            foreach (PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                if(player.Owner == p1 || player.Owner == p2)
+                {
+                    player.pvpEnabled = on;
+                }
+            }
+        }
+        if (IsServer)
+        {
+            SendUpdate("PVP", on + "," + p1 + "," + p2);
+        }
     }
 
     public void ResetHealth()
@@ -206,13 +225,22 @@ public class GM_Script : NetworkComponent
 
     public void NextPhase()
     {
+        PlayerController[] players = FindObjectsOfType<PlayerController>();
+
+        int firstPlayer = Random.Range(0, players.Length);
+        int secondPlayer = Random.Range(0, players.Length);
+        while (firstPlayer == secondPlayer)
+        {
+            secondPlayer = Random.Range(0, players.Length);
+        }
+
         switch (currentPhase)
         {
             case GAMEPHASE.LOBBY:
                 if((roundNum + 1) % 4 == 0)
                 {
                     pvpDone = false;
-                    EnablePVP(true);
+                    EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
                     currentPhase = GAMEPHASE.PVP;
                 }
                 else
@@ -225,7 +253,7 @@ public class GM_Script : NetworkComponent
                 if(roundNum > 10)
                 {
                     pvpDone = false;
-                    EnablePVP(true);
+                    EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
                     currentPhase = GAMEPHASE.PVP;
                 }
                 break;
@@ -245,7 +273,7 @@ public class GM_Script : NetworkComponent
 
         if (IsServer)
         {
-            PlayerController[] players = FindObjectsOfType<PlayerController>();
+
             switch (currentPhase)
             {
                 case GAMEPHASE.LOBBY:
@@ -263,12 +291,6 @@ public class GM_Script : NetworkComponent
                     break;
 
                 case GAMEPHASE.PVP:
-                    int firstPlayer = Random.Range(0, players.Length);
-                    int secondPlayer = Random.Range(0, players.Length);
-                    while(firstPlayer == secondPlayer)
-                    {
-                        secondPlayer = Random.Range(0, players.Length);
-                    }
                     players[firstPlayer].transform.position = PVPPosList[0].position;
                     players[secondPlayer].transform.position = PVPPosList[1].position;
                     break;

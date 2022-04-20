@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Item
 {
-    int id;
-    string name;
-    string desc;
-    int stacks;
+    public int id;
+    public string name;
+    public string desc;
+    public int stacks;
 
     public virtual void SetDefaults()
     {
@@ -16,6 +17,13 @@ public class Item
         desc = "DESC";
         stacks = 1;
     }
+
+    /*
+    public Sprite GetSprite()
+    {
+
+    }
+    */
 
     public virtual void OnShoot(PlayerController player) { }
     public virtual void OnTakeDamage(PlayerController player) { }
