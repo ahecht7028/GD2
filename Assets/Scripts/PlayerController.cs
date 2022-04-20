@@ -39,11 +39,13 @@ public class PlayerController : NetworkComponent
     Vector3 LastMove;
     Vector3 LastRotate;
     Rigidbody rb;
+    GameObject shopObject;
     bool isFiringM1;
     bool isFiringM2;
     bool isFiringUtility;
     bool isFiringSpecial;
     bool isFlashing = false;
+    bool isShopping = false;
 
     // Special Modifiers
     float dashMod = 0;
@@ -135,16 +137,93 @@ public class PlayerController : NetworkComponent
                 health = maxHealth;
             }
         }
+
+        if(flag == "ITEM_PICKUP")
+        {
+            // Find Non-empty index
+            int index = 0;
+            bool isNew = true;
+            Item newItem = GetNewItem(int.Parse(value));
+            while (items[index] != null)
+            {
+                // Check if item already exists
+                if(items[index].id == newItem.id)
+                {
+                    items[index].stacks++;
+                    isNew = false;
+                    break;
+                }
+                else
+                {
+                    index++;
+                }
+            }
+
+            // No new item exists
+            if (isNew)
+            {
+                items[index] = newItem;
+            }
+
+            if (IsServer)
+            {
+                SendUpdate(flag, value);
+            }
+            if (IsLocalPlayer)
+            {
+                UpdateItems();
+                SendCommand("PASSIVE", "");
+            }
+        }
+
+        if(flag == "PASSIVE")
+        {
+            GetPassiveStats();
+            if (IsServer)
+            {
+                SendUpdate(flag, value);
+            }
+        }
     }
 
     public override void NetworkedStart()
     {
-        
+        if (IsLocalPlayer)
+        {
+            shopObject.SetActive(false);
+        }
     }
 
     public override IEnumerator SlowUpdate()
     {
         yield return new WaitForSeconds(0.1f);
+    }
+
+    public Item GetNewItem(int _id)
+    {
+        switch (_id)
+        {
+            case 0:
+                return new Boots();
+            case 1:
+                return new Heart();
+            case 2:
+                return new Ammo();
+            case 3:
+                return new AttackSpeed();
+            case 4:
+                return new Scope();
+            case 5:
+                return new Medkit();
+                
+        }
+        Debug.LogError("No item found with ID: " + _id);
+        return null;
+    }
+
+    public void PickupItem(int _id)
+    {
+        SendCommand("ITEM_PICKUP", _id.ToString());
     }
 
     public void TakeDamage(float _damage, int _owner, bool _playerOwned)
@@ -216,7 +295,7 @@ public class PlayerController : NetworkComponent
 
     public void OnLook(InputAction.CallbackContext context)
     {
-        if (IsLocalPlayer)
+        if (IsLocalPlayer && !isShopping)
         {
             Vector2 mouseMovement = context.ReadValue<Vector2>();
 
@@ -252,90 +331,134 @@ public class PlayerController : NetworkComponent
         }
     }
 
-    public void OnFire(InputAction.CallbackContext context)
+    public void OnShop(InputAction.CallbackContext context)
     {
-        if (abilities[0].autoUse)
-        {
-            if(context.action.phase == InputActionPhase.Started)
-            {
-                isFiringM1 = true;
-            }
-            if(context.action.phase == InputActionPhase.Canceled)
-            {
-                isFiringM1 = false;
-            }
-        }
-        else
+        if (IsLocalPlayer)
         {
             if (context.action.phase == InputActionPhase.Started)
             {
-                abilities[0].UseAbility(this);
+                OpenShopMenu();
+            }
+        }
+    }
+
+    public void OpenShopMenu()
+    {
+        isShopping = !isShopping;
+        shopObject.SetActive(isShopping);
+
+        if (isShopping)
+        {
+            GameObject.Find("PlayerCanvas").GetComponent<ShopScript>().ShopOpened();
+        }
+        GameObject.Find("PlayerCanvas").GetComponent<ShopScript>().shopEnabled = isShopping;
+
+        if (isShopping)
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+    }
+
+    public void OnFire(InputAction.CallbackContext context)
+    {
+        if (!isShopping)
+        {
+            if (abilities[0].autoUse)
+            {
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    isFiringM1 = true;
+                }
+                if (context.action.phase == InputActionPhase.Canceled)
+                {
+                    isFiringM1 = false;
+                }
+            }
+            else
+            {
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    abilities[0].UseAbility(this);
+                }
             }
         }
     }
 
     public void OnUtility(InputAction.CallbackContext context)
     {
-        if (abilities[2].autoUse)
+        if (!isShopping)
         {
-            if (context.action.phase == InputActionPhase.Started)
+            if (abilities[2].autoUse)
             {
-                isFiringUtility = true;
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    isFiringUtility = true;
+                }
+                if (context.action.phase == InputActionPhase.Canceled)
+                {
+                    isFiringUtility = false;
+                }
             }
-            if (context.action.phase == InputActionPhase.Canceled)
+            else
             {
-                isFiringUtility = false;
-            }
-        }
-        else
-        {
-            if (context.action.phase == InputActionPhase.Started)
-            {
-                abilities[2].UseAbility(this);
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    abilities[2].UseAbility(this);
+                }
             }
         }
     }
 
     public void OnSecondary(InputAction.CallbackContext context)
     {
-        if (abilities[1].autoUse)
+        if (!isShopping)
         {
-            if (context.action.phase == InputActionPhase.Started)
+            if (abilities[1].autoUse)
             {
-                isFiringM2 = true;
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    isFiringM2 = true;
+                }
+                if (context.action.phase == InputActionPhase.Canceled)
+                {
+                    isFiringM2 = false;
+                }
             }
-            if (context.action.phase == InputActionPhase.Canceled)
+            else
             {
-                isFiringM2 = false;
-            }
-        }
-        else
-        {
-            if (context.action.phase == InputActionPhase.Started)
-            {
-                abilities[1].UseAbility(this);
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    abilities[1].UseAbility(this);
+                }
             }
         }
     }
 
     public void OnSpecial(InputAction.CallbackContext context)
     {
-        if (abilities[3].autoUse)
+        if (!isShopping)
         {
-            if (context.action.phase == InputActionPhase.Started)
+            if (abilities[3].autoUse)
             {
-                isFiringSpecial = true;
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    isFiringSpecial = true;
+                }
+                if (context.action.phase == InputActionPhase.Canceled)
+                {
+                    isFiringSpecial = false;
+                }
             }
-            if (context.action.phase == InputActionPhase.Canceled)
+            else
             {
-                isFiringSpecial = false;
-            }
-        }
-        else
-        {
-            if (context.action.phase == InputActionPhase.Started)
-            {
-                abilities[3].UseAbility(this);
+                if (context.action.phase == InputActionPhase.Started)
+                {
+                    abilities[3].UseAbility(this);
+                }
             }
         }
     }
@@ -416,6 +539,9 @@ public class PlayerController : NetworkComponent
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        shopObject = GameObject.Find("PlayerCanvas/ShopMenu");
+
+        Cursor.lockState = CursorLockMode.Locked;
         LastMove = Vector3.zero;
         isFiringM1 = false;
         isFiringM2 = false;
@@ -458,7 +584,7 @@ public class PlayerController : NetworkComponent
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 15);
                 Camera.main.transform.LookAt(camTransform);
 
-                Cursor.lockState = CursorLockMode.Locked;
+                
 
                 if (isFiringM1)
                 {
@@ -521,9 +647,12 @@ public class PlayerController : NetworkComponent
         // Display new items
         for(int i = 0; i < items.Length; i++)
         {
-            itemDisplay[i] = Instantiate(itemDisplayPrefab, itemObj.transform);
-            //itemDisplay[i].GetComponent<Image>().sprite = items[i].GetSprite();
-            itemDisplay[i].transform.Find("Count").GetComponent<Text>().text = "x" + items[i].stacks;
+            if(items[i] != null)
+            {
+                itemDisplay[i] = Instantiate(itemDisplayPrefab, itemObj.transform);
+                itemDisplay[i].GetComponent<Image>().sprite = items[i].GetSprite();
+                itemDisplay[i].transform.Find("Count").GetComponent<Text>().text = "x" + items[i].stacks;
+            }
         }
     }
 

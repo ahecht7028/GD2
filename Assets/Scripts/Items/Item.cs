@@ -3,27 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Item
+public abstract class Item
 {
     public int id;
-    public string name;
+    public string itemName;
     public string desc;
     public int stacks;
 
     public virtual void SetDefaults()
     {
         id = -1;
-        name = "NAME";
+        itemName = "NAME";
         desc = "DESC";
         stacks = 1;
     }
 
-    /*
     public Sprite GetSprite()
     {
-
+        return GameObject.Find("PlayerCanvas").GetComponent<IconSprites>().itemIcons[id];
     }
-    */
 
     public virtual void OnShoot(PlayerController player) { }
     public virtual void OnTakeDamage(PlayerController player) { }

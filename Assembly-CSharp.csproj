@@ -92,6 +92,14 @@
     <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\Player.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\ThirdPersonCamera.cs" />
+    <Compile Include="Assets\Scripts\IconSprites.cs" />
+    <Compile Include="Assets\Scripts\Items\Boots.cs" />
+    <Compile Include="Assets\Scripts\ShopScript.cs" />
+    <Compile Include="Assets\Scripts\Items\Heart.cs" />
+    <Compile Include="Assets\Scripts\Items\Ammo.cs" />
+    <Compile Include="Assets\Scripts\Items\AttackSpeed.cs" />
+    <Compile Include="Assets\Scripts\Items\Scope.cs" />
+    <Compile Include="Assets\Scripts\Items\Medkit.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\ImportedAssets\Day-Night Skyboxes\Textures\Readme for Assigning.txt" />

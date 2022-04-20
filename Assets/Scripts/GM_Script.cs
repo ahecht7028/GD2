@@ -116,7 +116,7 @@ public class GM_Script : NetworkComponent
                 }
                 count++;
             }
-            if (count < 1)
+            if (count < 2)
             {
                 readyGo = false;
             }

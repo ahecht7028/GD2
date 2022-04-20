@@ -715,6 +715,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 06a2709b-710d-4e78-995c-b10d47e1a8b0
     m_ActionName: Player/Jump[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2657999411588051736}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnShop
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d30da3c8-d5ca-44de-8ac5-fee56691bd8e
+    m_ActionName: Player/Shop[/Keyboard/q]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -742,12 +758,13 @@ MonoBehaviour:
   regen: 0.1
   critChance: 0.05
   lives: 3
-  money: 0
+  money: 1200
   level: 1
   exp: 0
   isAlive: 1
   maxHealth: 100
   health: 100
+  itemDisplayPrefab: {fileID: 6876880301246783834, guid: f271d9c58d96d624e8ba0f888c308959, type: 3}
   movementMod: 5
   sensitivity: 0.2
   pvpEnabled: 0
