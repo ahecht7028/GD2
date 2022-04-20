@@ -9,7 +9,11 @@ public abstract class Enemy : NetworkComponent
     public Transform target;
     public override void HandleMessage(string flag, string value)
     {
- 
+        if (flag == "DMG" && IsServer)
+        {
+            Debug.Log("Recieving DMG message");
+            hp -= float.Parse(value);
+        }
     }
 
     public override void NetworkedStart()
@@ -29,6 +33,8 @@ public abstract class Enemy : NetworkComponent
     public virtual void TakeDamage(float _damage, int _owner)
     {
         hp -= _damage;
+        SendUpdate("DMG", _damage.ToString());
+         Debug.Log("Sent DMG message");
         if (hp <= 0)
         {
             foreach (PlayerController p in FindObjectsOfType<PlayerController>())
@@ -36,6 +42,7 @@ public abstract class Enemy : NetworkComponent
                 if (p.Owner == _owner)
                 {
                     //add money and exp
+
                     p.exp += 2;
                 }
             }
