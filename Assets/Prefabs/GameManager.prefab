@@ -66,5 +66,8 @@ MonoBehaviour:
   MyCore: {fileID: 0}
   MyId: {fileID: 0}
   IsDirty: 0
+  fanfareSound: {fileID: 8300000, guid: 2b6ce16d9e13fc84fad5b75f6b29aa4f, type: 3}
+  currentPhase: 0
   gameStarted: 0
   gameWon: 0
+  pvpDone: 0

@@ -8,6 +8,7 @@ public class MainMenuController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Cursor.lockState = CursorLockMode.None;
         string[] args = System.Environment.GetCommandLineArgs();
         //ArgDisplay.text = System.Environment.CommandLine;
         foreach (string a in args)

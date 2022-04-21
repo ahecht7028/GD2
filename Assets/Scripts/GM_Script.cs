@@ -24,6 +24,9 @@ public class GM_Script : NetworkComponent
     GameObject healthBar;
     GameObject expBar;
 
+    AudioSource aSource;
+    public AudioClip fanfareSound;
+
     public enum GAMEPHASE { LOBBY, PVP, PVE };
 
     public GAMEPHASE currentPhase;
@@ -60,6 +63,7 @@ public class GM_Script : NetworkComponent
         {
             if (IsClient)
             {
+                aSource.PlayOneShot(fanfareSound);
                 NextPhase();
             }
         }
@@ -99,6 +103,7 @@ public class GM_Script : NetworkComponent
     {
         playerCanvas = GameObject.Find("PlayerCanvas");
         playerCanvas.SetActive(false);
+        aSource = GetComponent<AudioSource>();
     }
 
     public override IEnumerator SlowUpdate()
@@ -225,6 +230,12 @@ public class GM_Script : NetworkComponent
 
     public void NextPhase()
     {
+        CheckWin();
+        if (gameWon)
+        {
+            return;
+        }
+
         PlayerController[] players = FindObjectsOfType<PlayerController>();
 
         int firstPlayer = Random.Range(0, players.Length);

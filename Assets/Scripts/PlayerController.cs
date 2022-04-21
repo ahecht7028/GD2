@@ -39,6 +39,8 @@ public class PlayerController : NetworkComponent
     Vector3 LastMove;
     Vector3 LastRotate;
     Rigidbody rb;
+    Animator anim;
+    AudioSource aSource;
     GameObject shopObject;
     bool isFiringM1;
     bool isFiringM2;
@@ -46,22 +48,37 @@ public class PlayerController : NetworkComponent
     bool isFiringSpecial;
     bool isFlashing = false;
     bool isShopping = false;
+    bool grass = true;
 
     // Special Modifiers
     float dashMod = 0;
 
     public Material baseMat;
     public Material redFlash;
+    public AudioClip[] grassWalkSounds;
+    public AudioClip[] stoneWalkSounds;
 
     public override void HandleMessage(string flag, string value)
     {
         if(flag == "MOVE")
         {
+            string[] args = value.Split(',');
+            Vector2 movement = new Vector2(float.Parse(args[0]), float.Parse(args[1]));
             if (IsServer)
             {
-                string[] args = value.Split(',');
-                Vector2 movement = new Vector2(float.Parse(args[0]), float.Parse(args[1]));
                 LastMove = new Vector3(movement.x, 0, movement.y);
+                SendUpdate(flag, value);
+            }
+            else
+            {
+                if(movement.magnitude > 0.1f)
+                {
+                    anim.SetInteger("AnimationPar", 1);
+                }
+                else
+                {
+                    anim.SetInteger("AnimationPar", 0);
+                }
             }
         }
 
@@ -539,6 +556,8 @@ public class PlayerController : NetworkComponent
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
+        aSource = GetComponent<AudioSource>();
         shopObject = GameObject.Find("PlayerCanvas/ShopMenu");
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -605,6 +624,19 @@ public class PlayerController : NetworkComponent
 
                 FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)));
             }
+
+            RaycastHit hitInfo;
+            if(Physics.Raycast(transform.position, -transform.up, out hitInfo, 1))
+            {
+                if(hitInfo.collider.gameObject.layer == 6)
+                {
+                    grass = false;
+                }
+                if(hitInfo.collider.gameObject.layer == 7)
+                {
+                    grass = true;
+                }
+            }
         }
     }
 
@@ -669,6 +701,22 @@ public class PlayerController : NetworkComponent
         if (collision.gameObject.tag == "GROUND")
         {
             canJump = false;
+        }
+    }
+
+
+    public void Footstep()
+    {
+        if (canJump)
+        {
+            if (grass)
+            {
+                aSource.PlayOneShot(grassWalkSounds[Random.Range(0, grassWalkSounds.Length)]);
+            }
+            else
+            {
+                aSource.PlayOneShot(stoneWalkSounds[Random.Range(0, stoneWalkSounds.Length)]);
+            }
         }
     }
 }
