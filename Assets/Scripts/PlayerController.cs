@@ -143,7 +143,8 @@ public class PlayerController : NetworkComponent
                 {
                     if (player.Owner == _owner)
                     {
-                        player.money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                        player.money += 50 * player.level;
+                        player.exp += 50 * (player.level / 2);
                         break;
                     }
                 }
@@ -208,10 +209,33 @@ public class PlayerController : NetworkComponent
                 SendUpdate(flag, value);
             }
         }
+
+        if(flag == "MONEY")
+        {
+            money += int.Parse(value);
+        }
+
+        if(flag == "EXP")
+        {
+            exp += int.Parse(value);
+            if (exp >= level * 100)
+            {
+                exp -= level * 100;
+                level++;
+            }
+        }
+
+        if(flag == "HEAL")
+        {
+            GetPassiveStats();
+            health = float.Parse(value);
+        }
     }
 
     public override void NetworkedStart()
     {
+        GetPassiveStats();
+        health = maxHealth;
         if (IsLocalPlayer)
         {
             shopObject.SetActive(false);
@@ -234,7 +258,8 @@ public class PlayerController : NetworkComponent
                     IsDirty = false;
                 }
             }
-            yield return new WaitForSeconds(0.1f);
+            Heal(regen);
+            yield return new WaitForSeconds(1f);
         }
     }
 
@@ -291,7 +316,8 @@ public class PlayerController : NetworkComponent
                 {
                     if (player.Owner == _owner)
                     {
-                        money += 20 * player.level; // Arbitrary money gain /////////////////////////////////////
+                        money += 50 * player.level;
+                        player.exp += 50 * (player.level / 2);
                         break;
                     }
                 }
@@ -511,12 +537,14 @@ public class PlayerController : NetworkComponent
 
     public void GetPassiveStats()
     {
-        attackSpeed = 1f;
+        attackSpeed = 1f + (0.05f * level);
         movementSpeed = 1f;
-        damage = 1f;
-        maxHealthMod = 1f;
-        regen = 0.1f;
+        damage = 1f + (0.1f * level);
+        maxHealthMod = 1f + (0.1f * level);
+        regen = 0.1f + (0.05f * level);
         critChance = 0.05f;
+
+        maxHealth = 100 * maxHealthMod;
 
         for(int i = 0; i < items.Length; i++)
         {
@@ -572,6 +600,35 @@ public class PlayerController : NetworkComponent
 
             items[i].OnHit(this);
         }
+    }
+
+    public void GetMoney(int amount)
+    {
+        money += amount;
+        SendUpdate("MONEY", amount.ToString());
+    }
+
+    public void GetEXP(int amount)
+    {
+        exp += amount;
+        if(exp >= level * 100)
+        {
+            exp -= level * 100;
+            level++;
+        }
+
+        SendUpdate("EXP", amount.ToString());
+    }
+
+    public void Heal(float amount)
+    {
+        GetPassiveStats();
+        health += amount;
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+        SendUpdate("HEAL", health.ToString());
     }
 
     // Start is called before the first frame update

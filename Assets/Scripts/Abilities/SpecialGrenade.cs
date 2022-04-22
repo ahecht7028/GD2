@@ -21,14 +21,14 @@ public class SpecialGrenade : Ability
     public override void ActivateAbility(PlayerController player)
     {
         player.OnShoot();
-        cooldownTime = 1f / player.attackSpeed;
+        cooldownTime = 5f / player.attackSpeed;
         SendCommand("THROW", CalculateDamage(player).ToString());
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        cooldownTime = 1f;
+        cooldownTime = 5f;
         autoUse = false;
     }
 

@@ -5,7 +5,7 @@ using NETWORK_ENGINE;
 
 public class Grenade : NetworkComponent
 {
-    public float damage = 50f;
+    public float damage = 500f;
 
     bool isExploding;
 

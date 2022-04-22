@@ -14,6 +14,8 @@ public class GM_Script : NetworkComponent
     Transform[] PVPPosList;
     Transform[] enemyPosList;
 
+    GameObject[] aliveEnemies = new GameObject[10];
+
     // Scene objects
     GameObject playerCanvas;
 
@@ -28,6 +30,7 @@ public class GM_Script : NetworkComponent
 
     AudioSource aSource;
     public AudioClip fanfareSound;
+    public AudioClip[] songs;
 
     public enum GAMEPHASE { LOBBY, PVP, PVE };
 
@@ -37,8 +40,8 @@ public class GM_Script : NetworkComponent
     public bool gameWon;
     public bool pvpDone = false;
 
-    float timer = 30;
-    int roundNum = 1;
+    float timer = 40;
+    public int roundNum = 1;
     int gameWinner = 0;
 
     public override void HandleMessage(string flag, string value)
@@ -113,6 +116,8 @@ public class GM_Script : NetworkComponent
         lobbyLives[1] = GameObject.Find("Lobby/LobbyCanvas/Player2Info");
         lobbyLives[2] = GameObject.Find("Lobby/LobbyCanvas/Player3Info");
         lobbyLives[3] = GameObject.Find("Lobby/LobbyCanvas/Player4Info");
+        aSource.clip = songs[0];
+        aSource.Play();
     }
 
     public override IEnumerator SlowUpdate()
@@ -260,6 +265,11 @@ public class GM_Script : NetworkComponent
             {
                 return;
             }
+
+            if(currentPhase == GAMEPHASE.PVE)
+            {
+                DeleteEnemies();
+            }
         }
 
         PlayerController[] players = FindObjectsOfType<PlayerController>();
@@ -322,6 +332,23 @@ public class GM_Script : NetworkComponent
                 currentPhase = GAMEPHASE.LOBBY;
                 break;
         }
+
+        switch (currentPhase)
+        {
+            case GAMEPHASE.LOBBY:
+                aSource.clip = songs[0];
+                aSource.Play();
+                break;
+            case GAMEPHASE.PVE:
+                aSource.clip = songs[1];
+                aSource.Play();
+                break;
+            case GAMEPHASE.PVP:
+                aSource.clip = songs[2];
+                aSource.Play();
+                break;
+        }
+
         ResetHealth();
         roundNum++;
 
@@ -329,6 +356,10 @@ public class GM_Script : NetworkComponent
 
         if (IsServer)
         {
+            foreach(PlayerController player in FindObjectsOfType<PlayerController>())
+            {
+                player.Heal(99999);
+            }
 
             switch (currentPhase)
             {
@@ -350,6 +381,7 @@ public class GM_Script : NetworkComponent
                             players[i].transform.position = PVEPosList[i].position;
                         }
                     }
+                    SpawnEnemies();
                     break;
 
                 case GAMEPHASE.PVP:
@@ -366,17 +398,17 @@ public class GM_Script : NetworkComponent
         switch (currentPhase)
         {
             case GAMEPHASE.LOBBY:
-                timer = 10;
+                timer = 26;
                 roundNumText.text = "Round " + roundNum + ": Lobby";
                 break;
 
             case GAMEPHASE.PVE:
-                timer = 15;
+                timer = 60;
                 roundNumText.text = "Round " + roundNum + ": PVE";
                 break;
 
             case GAMEPHASE.PVP:
-                timer = 20;
+                timer = 60;
                 roundNumText.text = "Round " + roundNum + ": PVP";
                 break;
         }
@@ -407,7 +439,46 @@ public class GM_Script : NetworkComponent
         PVPPosList[1] = PVPPos.Find("Pos2");
 
         // Enemy
+        Transform enemyPos = GameObject.Find("Spawns/EnemySpawnLoc").transform;
+        enemyPosList = new Transform[10];
+        enemyPosList[0] = enemyPos.Find("1").transform;
+        enemyPosList[1] = enemyPos.Find("2").transform;
+        enemyPosList[2] = enemyPos.Find("3").transform;
+        enemyPosList[3] = enemyPos.Find("4").transform;
+        enemyPosList[4] = enemyPos.Find("5").transform;
+        enemyPosList[5] = enemyPos.Find("6").transform;
+        enemyPosList[6] = enemyPos.Find("7").transform;
+        enemyPosList[7] = enemyPos.Find("8").transform;
+        enemyPosList[8] = enemyPos.Find("9").transform;
+        enemyPosList[9] = enemyPos.Find("10").transform;
+    }
 
+    public void SpawnEnemies()
+    {
+        if (IsServer)
+        {
+            for(int i = 0; i < enemyPosList.Length; i++)
+            {
+                int isRed = Random.Range(0, 2);
+                aliveEnemies[i] = MyCore.NetCreateObject(7 + isRed, Owner, enemyPosList[i].position, Quaternion.identity);
+            }
+        }
+    }
+
+    public void DeleteEnemies()
+    {
+        if (IsServer)
+        {
+            for (int i = 0; i < enemyPosList.Length; i++)
+            {
+                if(aliveEnemies[i] != null)
+                {
+                    MyCore.NetDestroyObject(aliveEnemies[i].GetComponent<NetworkID>().NetId);
+                }
+                int isRed = Random.Range(0, 2);
+                aliveEnemies[i] = MyCore.NetCreateObject(7 + isRed, Owner, enemyPosList[i].position, Quaternion.identity);
+            }
+        }
     }
 
     public void CheckWin()
@@ -451,6 +522,19 @@ public class GM_Script : NetworkComponent
         expBar.GetComponent<Image>().fillAmount = expPercent;
     }
 
+    public int GetNumEnemies()
+    {
+        int num = 0;
+        for(int i = 0; i < aliveEnemies.Length; i++)
+        {
+            if(aliveEnemies[i] != null)
+            {
+                num++;
+            }
+        }
+        return num;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -483,9 +567,9 @@ public class GM_Script : NetworkComponent
             UpdateUI();
             if (IsServer)
             {
-                if (timer <= 0 || (pvpDone && currentPhase == GAMEPHASE.PVP))
+                if (timer <= 0 || (pvpDone && currentPhase == GAMEPHASE.PVP) || (GetNumEnemies() == 0 && currentPhase == GAMEPHASE.PVE))
                 {
-                    timer = 30;
+                    timer = 40;
                     NextPhase();
                 }
             }

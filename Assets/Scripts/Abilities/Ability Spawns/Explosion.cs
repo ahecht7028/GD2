@@ -5,7 +5,7 @@ using NETWORK_ENGINE;
 
 public class Explosion : NetworkComponent
 {
-    public float damage = 50f;
+    public float damage = 500f;
 
     public override void HandleMessage(string flag, string value)
     {

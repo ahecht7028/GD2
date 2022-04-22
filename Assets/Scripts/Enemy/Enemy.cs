@@ -45,9 +45,10 @@ public abstract class Enemy : NetworkComponent
             {
                 if (p.Owner == _owner)
                 {
-                    //add money and exp
+                    GM_Script gm = FindObjectOfType<GM_Script>();
+                    p.GetMoney(15 * gm.roundNum);
 
-                    p.exp += 2;
+                    p.GetEXP(10 * gm.roundNum);
                 }
             }
             MyCore.NetDestroyObject(MyId.NetId);

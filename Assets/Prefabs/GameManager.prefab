@@ -68,10 +68,15 @@ MonoBehaviour:
   MyId: {fileID: 0}
   IsDirty: 0
   fanfareSound: {fileID: 8300000, guid: 2b6ce16d9e13fc84fad5b75f6b29aa4f, type: 3}
+  songs:
+  - {fileID: 8300000, guid: 280550ca61e94b84587caa88cb2555ed, type: 3}
+  - {fileID: 8300000, guid: 2fbf1ee6c7aef694eb3cc3fc7ab4b6b8, type: 3}
+  - {fileID: 8300000, guid: 34ab1f3feb72e9c4a9c5d71df761ae96, type: 3}
   currentPhase: 0
   gameStarted: 0
   gameWon: 0
   pvpDone: 0
+  roundNum: 1
 --- !u!82 &-8567084667668817326
 AudioSource:
   m_ObjectHideFlags: 0
@@ -82,7 +87,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 7404066321195079914, guid: 46ee26dc313c5e34bb6c3d2af9f2c33c, type: 2}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 2fbf1ee6c7aef694eb3cc3fc7ab4b6b8, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
