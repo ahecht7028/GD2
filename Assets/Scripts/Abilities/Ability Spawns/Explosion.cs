@@ -39,13 +39,23 @@ public class Explosion : NetworkComponent
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Player")
+        if (IsServer)
         {
-            other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+            if (other.gameObject.tag == "Player")
+            {
+                other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+            }
+            if (other.gameObject.tag == "Enemy")
+            {
+                other.GetComponent<Enemy>().TakeDamage(damage, Owner);
+            }
         }
-        if (other.gameObject.tag == "Enemy")
+        if (IsLocalPlayer)
         {
-            other.GetComponent<Enemy>().TakeDamage(damage, Owner);
+            if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
+            {
+                GameObject.Find("PlayerCanvas").GetComponent<DamageTextController>().CreateFloatingText(damage.ToString(), transform.position, false, 3);
+            }
         }
     }
 }

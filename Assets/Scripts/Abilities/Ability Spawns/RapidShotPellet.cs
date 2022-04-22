@@ -57,7 +57,7 @@ public class RapidShotPellet : NetworkComponent
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             StartCoroutine(KillProjectile());
         }
-        if (IsClient)
+        if (IsLocalPlayer)
         {
             if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
             {

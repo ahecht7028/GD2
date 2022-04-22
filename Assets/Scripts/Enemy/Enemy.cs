@@ -47,10 +47,10 @@ public abstract class Enemy : NetworkComponent
     {
         hp -= _damage;
         SendUpdate("DMG", _damage.ToString());
-                    if (hp != 0)
-            {
-                StartCoroutine(FlashRed());
-            }
+        if (hp != 0)
+        {
+            StartCoroutine(FlashRed());
+        }
         if (hp <= 0)
         {
             Debug.Log("Enemy Dying");
