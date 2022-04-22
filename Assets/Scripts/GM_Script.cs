@@ -23,6 +23,8 @@ public class GM_Script : NetworkComponent
     GameObject moneyText;
     GameObject livesText;
     GameObject levelText;
+    
+    GameObject hpText;
     GameObject healthBar;
     GameObject expBar;
 
@@ -513,13 +515,14 @@ public class GM_Script : NetworkComponent
         }
     }
 
-    public void UpdatePlayerUI(string money, string lives, string level, float healthPercent, float expPercent)
+    public void UpdatePlayerUI(string money, string lives, string level, float healthPercent, float expPercent, float maxHP, float currentHP)
     {
         moneyText.GetComponent<Text>().text = money;
         livesText.GetComponent<Text>().text = lives;
         levelText.GetComponent<Text>().text = level;
         healthBar.GetComponent<Image>().fillAmount = healthPercent;
         expBar.GetComponent<Image>().fillAmount = expPercent;
+        hpText.GetComponent<Text>().text = currentHP.ToString() + "/" + maxHP.ToString();
     }
 
     public int GetNumEnemies()
@@ -541,6 +544,7 @@ public class GM_Script : NetworkComponent
         timerText = GameObject.Find("Scoreboard/Canvas/Timer").GetComponent<Text>();
         roundNumText = GameObject.Find("Scoreboard/Canvas/RoundNum").GetComponent<Text>();
         playerWinObj = GameObject.Find("PlayerCanvas/PlayerWin/Text");
+        hpText = GameObject.Find("PlayerCanvas/Bars/HealthBar/HPText");
         moneyText = GameObject.Find("PlayerCanvas/Stats/Money/Text");
         livesText = GameObject.Find("PlayerCanvas/Stats/Lives/Text");
         levelText = GameObject.Find("PlayerCanvas/Bars/Level/Text");

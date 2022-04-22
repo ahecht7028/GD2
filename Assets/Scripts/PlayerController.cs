@@ -701,7 +701,7 @@ public class PlayerController : NetworkComponent
                     abilities[3].UseAbility(this);
                 }
 
-                FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)));
+                FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)),health, maxHealth);
             }
 
             RaycastHit hitInfo;
