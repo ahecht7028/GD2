@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1326027225991481701}
   - component: {fileID: 5587650877632098588}
   - component: {fileID: 9160242458857798236}
+  - component: {fileID: -5115263688130607148}
   m_Layer: 0
   m_Name: RedBox
   m_TagString: Enemy
@@ -135,16 +136,39 @@ MonoBehaviour:
   MyCore: {fileID: 0}
   MyId: {fileID: 0}
   IsDirty: 0
-  hp: 0
-  attack: 0
-  attackCooldown: 0
+  hp: 100
+  attack: 10
+  attackCooldown: 3
   timer: 0
-  detectionRadius: 0
-  target: {fileID: 0}
+  DetectionRange: 100
+  AttackRange: 5
+  target: {x: 0, y: 0, z: 0}
   MyAgent: {fileID: 0}
   Goals:
   - {x: 0, y: 0, z: 0}
   CurrentGoal: {x: 0, y: 0, z: 0}
+--- !u!195 &-5115263688130607148
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2649684161821936641}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &2649684161821936643
 GameObject:
   m_ObjectHideFlags: 0

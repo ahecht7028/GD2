@@ -5,8 +5,9 @@ using NETWORK_ENGINE;
 
 public abstract class Enemy : NetworkComponent
 {
-    public float hp, attack, attackCooldown, timer, detectionRadius;
-    public Transform target;
+    public float hp, attack, attackCooldown, timer, DetectionRange, AttackRange;
+    public Vector3 target;
+    public bool hasTarget;
     public override void HandleMessage(string flag, string value)
     {
         if (flag == "DMG" && IsServer)
@@ -14,6 +15,8 @@ public abstract class Enemy : NetworkComponent
             Debug.Log("Recieving DMG message");
             hp -= float.Parse(value);
         }
+
+
     }
 
     public override void NetworkedStart()
@@ -26,6 +29,7 @@ public abstract class Enemy : NetworkComponent
         while (IsConnected)
         {
             timer += 0.1f;
+
             yield return new WaitForSeconds(0.1f);
         }
     }
@@ -34,7 +38,7 @@ public abstract class Enemy : NetworkComponent
     {
         hp -= _damage;
         SendUpdate("DMG", _damage.ToString());
-         Debug.Log("Sent DMG message");
+        Debug.Log("Sent DMG message");
         if (hp <= 0)
         {
             foreach (PlayerController p in FindObjectsOfType<PlayerController>())
@@ -46,20 +50,12 @@ public abstract class Enemy : NetworkComponent
                     p.exp += 2;
                 }
             }
+            MyCore.NetDestroyObject(MyId.NetId);
             Die();
         }
     }
 
-    public virtual void CheckAttack()
-    {
-        if (attackCooldown <= timer)
-        {
-            Attack();
-            timer = 0;
 
-        }
-
-    }
 
     public virtual void Attack()
     {
@@ -70,22 +66,25 @@ public abstract class Enemy : NetworkComponent
         MyCore.NetDestroyObject(MyId.NetId);
     }
 
-    public virtual void GetTarget()
+    public virtual bool GetTarget()
     {
 
         foreach (PlayerController p in FindObjectsOfType<PlayerController>())
         {
-            if ((transform.position - p.transform.position).magnitude <= detectionRadius)
+            if ((transform.position - p.transform.position).magnitude <= DetectionRange)
             {
-                target = p.transform;
-                break;
+                target = p.transform.position;
+                hasTarget=true;
+                return true;
+
             }
-            else
-            {
-                target = null;
-            }
+
         }
+        hasTarget= false;
+        return false;
     }
+
+
     public virtual void SetScaling(float scaling)
     {
         hp *= scaling;

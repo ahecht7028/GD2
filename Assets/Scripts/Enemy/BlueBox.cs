@@ -6,8 +6,7 @@ using UnityEngine.AI;
 
 public class BlueBox : Enemy
 {
-    
-    public NavMeshAgent MyAgent;
+        public NavMeshAgent MyAgent;
     public List<Vector3> Goals;
     public Vector3 CurrentGoal;
     int index;
@@ -21,11 +20,13 @@ public class BlueBox : Enemy
             //Debug.Log("Nav Called, index = " + index + ", speed = " + speed);
             CurrentGoal = Goals[index];
             LookAtTarget(CurrentGoal);
+            MyAgent.SetDestination(CurrentGoal);
         }
 
     }
     void Start()
     {
+        MyAgent = GetComponent<NavMeshAgent>();
         //Add points (empty gameobjects) tagged with NavPoint
         GameObject[] temp = GameObject.FindGameObjectsWithTag("NavPoint");
         Goals = new List<Vector3>();
@@ -52,9 +53,8 @@ public class BlueBox : Enemy
                 int temp = Random.Range(0, Goals.Count);
                 SendUpdate("NAV", temp.ToString());
                 CurrentGoal = Goals[temp];
-
+                LookAtTarget(CurrentGoal);
                 MyAgent.SetDestination(CurrentGoal);
-
 
             }
 
