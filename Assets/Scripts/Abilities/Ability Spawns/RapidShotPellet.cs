@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 using NETWORK_ENGINE;
 
 public class RapidShotPellet : NetworkComponent
@@ -9,7 +10,10 @@ public class RapidShotPellet : NetworkComponent
 
     public override void HandleMessage(string flag, string value)
     {
-
+        if(flag == "DISABLE_VFX")
+        {
+            transform.Find("PelletTrail").GetComponent<VisualEffect>().Stop();
+        }
     }
 
     public override void NetworkedStart()
@@ -19,7 +23,17 @@ public class RapidShotPellet : NetworkComponent
 
     public override IEnumerator SlowUpdate()
     {
-        yield return new WaitForSeconds(0.1f);
+        while (IsConnected)
+        {
+            if (IsServer)
+            {
+                if (Mathf.Abs(transform.position.x) > 1000f || Mathf.Abs(transform.position.y) > 1000f || Mathf.Abs(transform.position.z) > 1000f)
+                {
+                    MyCore.NetDestroyObject(MyId.NetId);
+                }
+            }
+            yield return new WaitForSeconds(1f);
+        }
     }
 
 
@@ -36,7 +50,16 @@ public class RapidShotPellet : NetworkComponent
             {
                 other.GetComponent<Enemy>().TakeDamage(damage, Owner);
             }
-            MyCore.NetDestroyObject(MyId.NetId);
+            GetComponent<SphereCollider>().enabled = false;
+            SendUpdate("DISABLE_VFX", "");
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            StartCoroutine(KillProjectile());
         }
+    }
+
+    IEnumerator KillProjectile()
+    {
+        yield return new WaitForSeconds(1);
+        MyCore.NetDestroyObject(MyId.NetId);
     }
 }

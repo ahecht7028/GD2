@@ -14,7 +14,7 @@ public class M2Slash : Ability
 
                 int newOwner = int.Parse(args[0]);
 
-                GameObject temp = MyCore.NetCreateObject(3, newOwner, transform.position + transform.forward, Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y - 90, transform.eulerAngles.z));
+                GameObject temp = MyCore.NetCreateObject(3, newOwner, transform.position + transform.forward + (transform.up * 2), Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y - 90, transform.eulerAngles.z));
                 temp.GetComponent<Rigidbody>().angularVelocity = new Vector3(0, 2 * Mathf.PI, 0);
                 temp.GetComponent<SlashAttack>().damage *= float.Parse(args[1]);
             }

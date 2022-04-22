@@ -9,6 +9,7 @@ public class PlayerController : NetworkComponent
 {
     [Header("Stats")]
     // Stats
+    public string playerName = "";
     public float attackSpeed = 1f;
     public float movementSpeed = 1f;
     public float damage = 1f;
@@ -60,6 +61,10 @@ public class PlayerController : NetworkComponent
 
     public override void HandleMessage(string flag, string value)
     {
+        if(flag == "NAME")
+        {
+            playerName = value;
+        }
         if(flag == "MOVE")
         {
             string[] args = value.Split(',');
@@ -148,6 +153,8 @@ public class PlayerController : NetworkComponent
             {
                 // Player is eliminated
                 isAlive = false;
+                // Disable mesh renderer
+                transform.Find("Player").GetComponent<SkinnedMeshRenderer>().enabled = false;
             }
             else
             {
@@ -209,11 +216,26 @@ public class PlayerController : NetworkComponent
         {
             shopObject.SetActive(false);
         }
+        if (IsServer)
+        {
+            SendUpdate("NAME", playerName);
+        }
     }
 
     public override IEnumerator SlowUpdate()
     {
-        yield return new WaitForSeconds(0.1f);
+        while (IsConnected)
+        {
+            if (IsServer)
+            {
+                if (IsDirty)
+                {
+                    SendUpdate("NAME", playerName);
+                    IsDirty = false;
+                }
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     public Item GetNewItem(int _id)
@@ -245,7 +267,7 @@ public class PlayerController : NetworkComponent
 
     public void TakeDamage(float _damage, int _owner, bool _playerOwned)
     {
-        if (!pvpEnabled && _playerOwned)
+        if ((!pvpEnabled && _playerOwned) || !isAlive)
         {
             return;
         }
@@ -585,8 +607,8 @@ public class PlayerController : NetworkComponent
         {
             rb.rotation = Quaternion.Euler(new Vector3(0, LastRotate.x, 0));
 
-            Vector3 forwardMove = transform.forward * LastMove.z * (movementMod + dashMod) * movementSpeed;
-            Vector3 sideStepMove = transform.right * LastMove.x * (movementMod + dashMod) * movementSpeed;
+            Vector3 forwardMove = (transform.forward * dashMod) + (transform.forward * LastMove.z * movementMod * movementSpeed);
+            Vector3 sideStepMove = transform.right * LastMove.x * movementMod * movementSpeed;
             rb.velocity = new Vector3(forwardMove.x + sideStepMove.x, rb.velocity.y, forwardMove.z + sideStepMove.z);
 
             //Transform camPivot = transform.Find("CameraCenter");
@@ -599,7 +621,7 @@ public class PlayerController : NetworkComponent
             if (IsLocalPlayer && MyId.IsInit)
             {
                 Transform camTransform = transform.Find("CameraCenter");
-                Vector3 camPos = camTransform.position - 5 * (camTransform.forward) + camTransform.up;
+                Vector3 camPos = camTransform.position - (8 * camTransform.forward) + (camTransform.up * 3);
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 15);
                 Camera.main.transform.LookAt(camTransform);
 
@@ -646,15 +668,25 @@ public class PlayerController : NetworkComponent
         {
             isFlashing = true;
             SkinnedMeshRenderer mr = transform.Find("Player").GetComponent<SkinnedMeshRenderer>();
-            Material[] mats = mr.materials;
+            Material[] mats = new Material[3];
+            if (mr != null)
+            {
+                mats = mr.materials;
+            }
 
             for (int i = 0; i < 10; i++)
             {
-                mats[1] = redFlash;
-                mr.materials = mats;
+                if (mr != null)
+                {
+                    mats[1] = redFlash;
+                    mr.materials = mats;
+                }
                 yield return new WaitForSeconds(0.03f);
-                mats[1] = baseMat;
-                mr.materials = mats;
+                if (mr != null)
+                {
+                    mats[1] = baseMat;
+                    mr.materials = mats;
+                }
                 yield return new WaitForSeconds(0.03f);
             }
 

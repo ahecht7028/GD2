@@ -24,6 +24,8 @@ public class GM_Script : NetworkComponent
     GameObject healthBar;
     GameObject expBar;
 
+    GameObject[] lobbyLives = new GameObject[4];
+
     AudioSource aSource;
     public AudioClip fanfareSound;
 
@@ -63,7 +65,10 @@ public class GM_Script : NetworkComponent
         {
             if (IsClient)
             {
-                aSource.PlayOneShot(fanfareSound);
+                if (IsLocalPlayer && currentPhase != GAMEPHASE.LOBBY)
+                {
+                    aSource.PlayOneShot(fanfareSound);
+                }
                 NextPhase();
             }
         }
@@ -104,6 +109,10 @@ public class GM_Script : NetworkComponent
         playerCanvas = GameObject.Find("PlayerCanvas");
         playerCanvas.SetActive(false);
         aSource = GetComponent<AudioSource>();
+        lobbyLives[0] = GameObject.Find("Lobby/LobbyCanvas/Player1Info");
+        lobbyLives[1] = GameObject.Find("Lobby/LobbyCanvas/Player2Info");
+        lobbyLives[2] = GameObject.Find("Lobby/LobbyCanvas/Player3Info");
+        lobbyLives[3] = GameObject.Find("Lobby/LobbyCanvas/Player4Info");
     }
 
     public override IEnumerator SlowUpdate()
@@ -137,7 +146,7 @@ public class GM_Script : NetworkComponent
             {
                 // Object 0: Player
                 GameObject temp = MyCore.NetCreateObject(0, lp.Owner, new Vector3(-5 + (lp.Owner * 2), 0, 0), Quaternion.identity);
-
+                temp.GetComponent<PlayerController>().playerName = lp.pName;
             }
         }
 
@@ -192,6 +201,17 @@ public class GM_Script : NetworkComponent
     public void UpdateUI()
     {
         timerText.text = ((int)timer).ToString();
+        PlayerController[] players = FindObjectsOfType<PlayerController>();
+        for(int i = 0; i < 4; i++)
+        {
+            lobbyLives[i].transform.Find("Text").GetComponent<Text>().text = "";
+            lobbyLives[i].transform.Find("LivesText").GetComponent<Text>().text = "";
+        }
+        for(int i = 0; i < players.Length; i++)
+        {
+            lobbyLives[i].transform.Find("Text").GetComponent<Text>().text = players[i].playerName + "\nLives:";
+            lobbyLives[i].transform.Find("LivesText").GetComponent<Text>().text = players[i].lives.ToString();
+        }
     }
 
     public void EnablePVP(bool on, int p1 = 0, int p2 = 0)
@@ -201,6 +221,7 @@ public class GM_Script : NetworkComponent
             foreach (PlayerController player in FindObjectsOfType<PlayerController>())
             {
                 player.pvpEnabled = on;
+                Debug.Log("Player " + player.Owner + " pvp set to " + player.pvpEnabled);
             }
         }
         else
@@ -210,9 +231,11 @@ public class GM_Script : NetworkComponent
                 if(player.Owner == p1 || player.Owner == p2)
                 {
                     player.pvpEnabled = on;
+                    Debug.Log("Player " + player.Owner + " pvp set to " + player.pvpEnabled);
                 }
             }
         }
+        
         if (IsServer)
         {
             SendUpdate("PVP", on + "," + p1 + "," + p2);
@@ -230,17 +253,24 @@ public class GM_Script : NetworkComponent
 
     public void NextPhase()
     {
-        CheckWin();
-        if (gameWon)
+        if (IsServer)
         {
-            return;
+            CheckWin();
+            if (gameWon)
+            {
+                return;
+            }
         }
 
         PlayerController[] players = FindObjectsOfType<PlayerController>();
 
         int firstPlayer = Random.Range(0, players.Length);
         int secondPlayer = Random.Range(0, players.Length);
-        while (firstPlayer == secondPlayer)
+        while (!players[firstPlayer].isAlive)
+        {
+            firstPlayer = Random.Range(0, players.Length);
+        }
+        while (firstPlayer == secondPlayer || !players[secondPlayer].isAlive)
         {
             secondPlayer = Random.Range(0, players.Length);
         }
@@ -251,12 +281,18 @@ public class GM_Script : NetworkComponent
                 if((roundNum + 1) % 4 == 0)
                 {
                     pvpDone = false;
-                    EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
+                    if (IsServer)
+                    {
+                        EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
+                    }
                     currentPhase = GAMEPHASE.PVP;
                 }
                 else
                 {
-                    EnablePVP(false);
+                    if (IsServer)
+                    {
+                        EnablePVP(false);
+                    }
                     currentPhase = GAMEPHASE.PVE;
                 }
 
@@ -264,16 +300,25 @@ public class GM_Script : NetworkComponent
                 if(roundNum > 10)
                 {
                     pvpDone = false;
-                    EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
+                    if (IsServer)
+                    {
+                        EnablePVP(true, players[firstPlayer].Owner, players[secondPlayer].Owner);
+                    }
                     currentPhase = GAMEPHASE.PVP;
                 }
                 break;
             case GAMEPHASE.PVE:
-                EnablePVP(false);
+                if (IsServer)
+                {
+                    EnablePVP(false);
+                }
                 currentPhase = GAMEPHASE.LOBBY;
                 break;
             case GAMEPHASE.PVP:
-                EnablePVP(false);
+                if (IsServer)
+                {
+                    EnablePVP(false);
+                }
                 currentPhase = GAMEPHASE.LOBBY;
                 break;
         }
@@ -290,14 +335,20 @@ public class GM_Script : NetworkComponent
                 case GAMEPHASE.LOBBY:
                     for (int i = 0; i < players.Length; i++)
                     {
-                        players[i].transform.position = lobbyPosList[i].position;
+                        if (players[i].isAlive)
+                        {
+                            players[i].transform.position = lobbyPosList[i].position;
+                        }
                     }
                     break;
 
                 case GAMEPHASE.PVE:
                     for (int i = 0; i < players.Length; i++)
                     {
-                        players[i].transform.position = PVEPosList[i].position;
+                        if (players[i].isAlive)
+                        {
+                            players[i].transform.position = PVEPosList[i].position;
+                        }
                     }
                     break;
 

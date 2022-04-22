@@ -37,7 +37,7 @@ public class SlashAttack : NetworkComponent
                 break;
             }
         }
-
+        transform.position = new Vector3(transform.position.x, transform.position.y + 5f, transform.position.z);
         if (IsServer)
         {
             // rb.angularVelocity = new Vector3(0, Mathf.PI, 0);
