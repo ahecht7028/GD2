@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using NETWORK_ENGINE;
 
-public class EnemySlash :  NetworkComponent
+public class EnemySlash : NetworkComponent
 {
     public float damage = 30f;
 
-    public Transform playerRef;
+    public Transform EnemyRef;
     Rigidbody rb;
 
     public override void HandleMessage(string flag, string value)
@@ -48,7 +48,7 @@ public class EnemySlash :  NetworkComponent
     void Update()
     {
         transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y + 20 * Time.deltaTime, transform.eulerAngles.z);
-        transform.position = playerRef.position + playerRef.forward * 2;
+        
     }
 
     private void OnTriggerEnter(Collider other)

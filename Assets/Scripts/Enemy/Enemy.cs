@@ -8,12 +8,21 @@ public abstract class Enemy : NetworkComponent
     public float hp, attack, attackCooldown, timer, DetectionRange, AttackRange;
     public Vector3 target;
     public bool hasTarget;
+    bool isFlashing = false;
+
+    public Material baseMat;
+    public Material redFlash;
     public override void HandleMessage(string flag, string value)
     {
         if (flag == "DMG" && IsServer)
         {
-            Debug.Log("Recieving DMG message");
+
             hp -= float.Parse(value);
+            Debug.Log("Enemy Taking Dmg, HP is " + hp);
+            if (hp != 0)
+            {
+                StartCoroutine(FlashRed());
+            }
         }
 
 
@@ -38,9 +47,13 @@ public abstract class Enemy : NetworkComponent
     {
         hp -= _damage;
         SendUpdate("DMG", _damage.ToString());
-        Debug.Log("Sent DMG message");
+                    if (hp != 0)
+            {
+                StartCoroutine(FlashRed());
+            }
         if (hp <= 0)
         {
+            Debug.Log("Enemy Dying");
             foreach (PlayerController p in FindObjectsOfType<PlayerController>())
             {
                 if (p.Owner == _owner)
@@ -49,10 +62,12 @@ public abstract class Enemy : NetworkComponent
                     p.GetMoney(15 * gm.roundNum);
 
                     p.GetEXP(10 * gm.roundNum);
+                    MyCore.NetDestroyObject(MyId.NetId);
                 }
             }
-            MyCore.NetDestroyObject(MyId.NetId);
-            Die();
+
+
+
         }
     }
 
@@ -75,17 +90,49 @@ public abstract class Enemy : NetworkComponent
             if ((transform.position - p.transform.position).magnitude <= DetectionRange)
             {
                 target = p.transform.position;
-                hasTarget=true;
+                hasTarget = true;
                 return true;
 
             }
 
         }
-        hasTarget= false;
+        hasTarget = false;
         return false;
     }
 
+    public IEnumerator FlashRed()
+    {
+        Debug.Log("EnemyFlashing Called");
+        if (!isFlashing)
+        {
+            isFlashing = true;
+            SkinnedMeshRenderer mr = transform.GetChild(0).GetComponent<SkinnedMeshRenderer>();
+            Material[] mats = new Material[3];
+            if (mr != null)
+            {
+                mats = mr.materials;
+            }
 
+            for (int i = 0; i < 10; i++)
+            {
+                if (mr != null)
+                {
+                    mats[1] = redFlash;
+                    mr.materials = mats;
+                }
+                yield return new WaitForSeconds(0.03f);
+                if (mr != null)
+                {
+                    mats[1] = baseMat;
+                    mr.materials = mats;
+                }
+                yield return new WaitForSeconds(0.03f);
+            }
+
+            isFlashing = false;
+        }
+        yield return null;
+    }
     public virtual void SetScaling(float scaling)
     {
         hp *= scaling;

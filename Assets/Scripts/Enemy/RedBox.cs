@@ -106,7 +106,7 @@ public class RedBox : Enemy
         Debug.Log("Attack Called, Command Sent");
         SendUpdate("SLASH", Owner + "," + attack.ToString());
         GameObject temp = MyCore.NetCreateObject(9, Owner, transform.position + transform.forward, Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y - 90, transform.eulerAngles.z));
-        temp.GetComponent<EnemySlash>().playerRef = transform;
+        temp.GetComponent<EnemySlash>().EnemyRef = transform;
         temp.GetComponent<Rigidbody>().angularVelocity = new Vector3(0, 2 * Mathf.PI, 0);
         temp.GetComponent<EnemySlash>().damage = attack;
     }

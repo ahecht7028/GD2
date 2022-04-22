@@ -10,7 +10,7 @@ public class RapidShotPellet : NetworkComponent
 
     public override void HandleMessage(string flag, string value)
     {
-        if(flag == "DISABLE_VFX")
+        if (flag == "DISABLE_VFX")
         {
             transform.Find("PelletTrail").GetComponent<VisualEffect>().Stop();
         }
@@ -41,19 +41,28 @@ public class RapidShotPellet : NetworkComponent
     {
         if (IsServer)
         {
-            if(other.gameObject.tag == "Player")
+            if (other.gameObject.tag == "Player")
             {
                 other.GetComponent<PlayerController>().TakeDamage(damage, Owner, true);
+                GameObject.Find("PlayerCanvas").GetComponent<DamageTextController>().CreateFloatingText(damage.ToString(), transform.position, false, 3);
             }
 
-            if(other.gameObject.tag == "Enemy")
+            if (other.gameObject.tag == "Enemy")
             {
                 other.GetComponent<Enemy>().TakeDamage(damage, Owner);
+                GameObject.Find("PlayerCanvas").GetComponent<DamageTextController>().CreateFloatingText(damage.ToString(), transform.position, false, 3);
             }
             GetComponent<SphereCollider>().enabled = false;
             SendUpdate("DISABLE_VFX", "");
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             StartCoroutine(KillProjectile());
+        }
+        if (IsClient)
+        {
+            if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
+            {
+                GameObject.Find("PlayerCanvas").GetComponent<DamageTextController>().CreateFloatingText(damage.ToString(), transform.position, false, 3);
+            }
         }
     }
 
