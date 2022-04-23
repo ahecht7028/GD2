@@ -24,6 +24,7 @@ public class M2Slash : Ability
     public override void ActivateAbility(PlayerController player)
     {
         player.OnShoot();
+        player.SlashSound();
         cooldownTime = 2f / player.attackSpeed;
         SendCommand("SLASH", Owner + "," + CalculateDamage(player).ToString());
     }

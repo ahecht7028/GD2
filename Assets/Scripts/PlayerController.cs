@@ -58,6 +58,8 @@ public class PlayerController : NetworkComponent
     public Material redFlash;
     public AudioClip[] grassWalkSounds;
     public AudioClip[] stoneWalkSounds;
+    public AudioClip dashSound;
+    public AudioClip slashSound;
 
     public override void HandleMessage(string flag, string value)
     {
@@ -430,7 +432,7 @@ public class PlayerController : NetworkComponent
 
     public void OnFire(InputAction.CallbackContext context)
     {
-        if (!isShopping)
+        if (!isShopping && isAlive)
         {
             if (abilities[0].autoUse)
             {
@@ -455,7 +457,7 @@ public class PlayerController : NetworkComponent
 
     public void OnUtility(InputAction.CallbackContext context)
     {
-        if (!isShopping)
+        if (!isShopping && isAlive)
         {
             if (abilities[2].autoUse)
             {
@@ -480,7 +482,7 @@ public class PlayerController : NetworkComponent
 
     public void OnSecondary(InputAction.CallbackContext context)
     {
-        if (!isShopping)
+        if (!isShopping && isAlive)
         {
             if (abilities[1].autoUse)
             {
@@ -505,7 +507,7 @@ public class PlayerController : NetworkComponent
 
     public void OnSpecial(InputAction.CallbackContext context)
     {
-        if (!isShopping)
+        if (!isShopping && isAlive)
         {
             if (abilities[3].autoUse)
             {
@@ -531,6 +533,7 @@ public class PlayerController : NetworkComponent
     public IEnumerator StartDash()
     {
         dashMod = 80;
+        aSource.PlayOneShot(dashSound);
         yield return new WaitForSeconds(0.2f);
         dashMod = 0;
     }
@@ -544,7 +547,6 @@ public class PlayerController : NetworkComponent
         regen = 0.1f + (0.05f * level);
         critChance = 0.05f;
 
-        maxHealth = 100 * maxHealthMod;
 
         for(int i = 0; i < items.Length; i++)
         {
@@ -555,6 +557,8 @@ public class PlayerController : NetworkComponent
 
             items[i].Passive(this);
         }
+
+        maxHealth = 100 * maxHealthMod;
     }
 
     public void OnShoot()
@@ -631,6 +635,12 @@ public class PlayerController : NetworkComponent
         SendUpdate("HEAL", health.ToString());
     }
 
+    public void SlashSound()
+    {
+        aSource.PlayOneShot(slashSound);
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -682,26 +692,28 @@ public class PlayerController : NetworkComponent
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 15);
                 Camera.main.transform.LookAt(camTransform);
 
-                
 
-                if (isFiringM1)
+                if (isAlive)
                 {
-                    abilities[0].UseAbility(this);
-                }
-                if (isFiringM2)
-                {
-                    abilities[1].UseAbility(this);
-                }
-                if (isFiringUtility)
-                {
-                    abilities[2].UseAbility(this);
-                }
-                if (isFiringSpecial)
-                {
-                    abilities[3].UseAbility(this);
+                    if (isFiringM1)
+                    {
+                        abilities[0].UseAbility(this);
+                    }
+                    if (isFiringM2)
+                    {
+                        abilities[1].UseAbility(this);
+                    }
+                    if (isFiringUtility)
+                    {
+                        abilities[2].UseAbility(this);
+                    }
+                    if (isFiringSpecial)
+                    {
+                        abilities[3].UseAbility(this);
+                    }
                 }
 
-                FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)),health, maxHealth);
+                FindObjectOfType<GM_Script>().UpdatePlayerUI(money.ToString(), lives.ToString(), level.ToString(), (float)(health / maxHealth), (float)(exp / (level * 100f)),maxHealth, health);
             }
 
             RaycastHit hitInfo;

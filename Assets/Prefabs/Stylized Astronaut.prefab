@@ -760,7 +760,7 @@ MonoBehaviour:
   regen: 0.1
   critChance: 0.05
   lives: 3
-  money: 1200
+  money: 240
   level: 1
   exp: 0
   isAlive: 1
@@ -781,6 +781,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 54c63d36fb8dc104098742923b68f122, type: 3}
   - {fileID: 8300000, guid: 6dfe8b23c43b0144e8a8b6d2b5739850, type: 3}
   - {fileID: 8300000, guid: 2c0813d5b4803cf4ea2ecf17d785373c, type: 3}
+  dashSound: {fileID: 8300000, guid: 89fa65b5e0a3c7e449577452aafd8733, type: 3}
+  slashSound: {fileID: 8300000, guid: ce0fadf8440373045826640721fcafe0, type: 3}
 --- !u!82 &1294493542286641194
 AudioSource:
   m_ObjectHideFlags: 0

@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\Enemy\Drone.cs" />
     <Compile Include="Assets\Scripts\Items\Scope.cs" />
     <Compile Include="Assets\Scripts\Abilities\M2Slash.cs" />
+    <Compile Include="Assets\Scripts\DamageTextController.cs" />
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\TemplateAssets\MenuItems\GameRoomButtonPrefab\Scripts\GameRoomButton.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability Spawns\RapidShotPellet.cs" />
     <Compile Include="Assets\Scripts\Items\Heart.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Assets\NetworkEngine_4_8\NetworkEngine\AxisCallbackSystem\AxisEventCallers.cs" />
     <Compile Include="Assets\Scripts\Abilities\SpecialGrenade.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\FloatingText.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\Player.cs" />
     <Compile Include="Assets\ImportedAssets\Stylized Astronaut\Character\ThirdPersonCamera.cs" />

@@ -368,10 +368,8 @@ public class GM_Script : NetworkComponent
                 case GAMEPHASE.LOBBY:
                     for (int i = 0; i < players.Length; i++)
                     {
-                        if (players[i].isAlive)
-                        {
-                            players[i].transform.position = lobbyPosList[i].position;
-                        }
+                        players[i].transform.position = lobbyPosList[i].position;
+
                     }
                     break;
 

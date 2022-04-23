@@ -12,15 +12,19 @@ public abstract class Enemy : NetworkComponent
 
     public Material baseMat;
     public Material redFlash;
+
+    public AudioSource aSource;
+
     public override void HandleMessage(string flag, string value)
     {
-        if (flag == "DMG" && IsServer)
+        if (flag == "DMG")
         {
 
             hp -= float.Parse(value);
             Debug.Log("Enemy Taking Dmg, HP is " + hp);
             if (hp != 0)
             {
+                aSource.Play();
                 StartCoroutine(FlashRed());
             }
         }
@@ -30,7 +34,7 @@ public abstract class Enemy : NetworkComponent
 
     public override void NetworkedStart()
     {
-
+        aSource = GetComponent<AudioSource>();
     }
 
     public override IEnumerator SlowUpdate()
@@ -47,10 +51,7 @@ public abstract class Enemy : NetworkComponent
     {
         hp -= _damage;
         SendUpdate("DMG", _damage.ToString());
-        if (hp != 0)
-        {
-            StartCoroutine(FlashRed());
-        }
+
         if (hp <= 0)
         {
             Debug.Log("Enemy Dying");
@@ -62,11 +63,11 @@ public abstract class Enemy : NetworkComponent
                     p.GetMoney(15 * gm.roundNum);
 
                     p.GetEXP(10 * gm.roundNum);
-                    MyCore.NetDestroyObject(MyId.NetId);
                 }
             }
 
 
+            MyCore.NetDestroyObject(MyId.NetId);
 
         }
     }
@@ -107,7 +108,7 @@ public abstract class Enemy : NetworkComponent
         {
             isFlashing = true;
             SkinnedMeshRenderer mr = transform.GetChild(0).GetComponent<SkinnedMeshRenderer>();
-            Material[] mats = new Material[3];
+            Material[] mats = new Material[1];
             if (mr != null)
             {
                 mats = mr.materials;
@@ -117,13 +118,13 @@ public abstract class Enemy : NetworkComponent
             {
                 if (mr != null)
                 {
-                    mats[1] = redFlash;
+                    mats[0] = redFlash;
                     mr.materials = mats;
                 }
                 yield return new WaitForSeconds(0.03f);
                 if (mr != null)
                 {
-                    mats[1] = baseMat;
+                    mats[0] = baseMat;
                     mr.materials = mats;
                 }
                 yield return new WaitForSeconds(0.03f);

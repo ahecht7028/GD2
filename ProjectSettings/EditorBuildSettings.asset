@@ -9,8 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 4c07c88eff1958c4f940f679efadb9f3
   - enabled: 1
-    path: Assets/NetworkEngine_4_8/NetworkEngine/TemplateAssets/Template_Scenes/WAN_Game.unity
-    guid: 646d32d828b9ece4bae9613529fd952c
+    path: Assets/Scenes/WANMainGame.unity
+    guid: e3672313a3875e74cad4df258396a1c7
   - enabled: 1
     path: Assets/Scenes/MainGame.unity
     guid: e8c6090952c9ef24a90aa190333c4465

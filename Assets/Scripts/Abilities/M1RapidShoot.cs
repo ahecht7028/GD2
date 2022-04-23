@@ -14,8 +14,8 @@ public class M1RapidShoot : Ability
             {
                 Transform camPivot = transform.Find("CameraCenter");
 
-                GameObject temp = MyCore.NetCreateObject(2, Owner, transform.position + (transform.forward * 2) + (transform.up * 1.5f), Quaternion.identity);
-                temp.GetComponent<Rigidbody>().velocity = (camPivot.forward - (camPivot.up / 4)).normalized * 100;
+                GameObject temp = MyCore.NetCreateObject(2, Owner, transform.position + (transform.forward * 1) + (transform.up * 1.5f), Quaternion.identity);
+                temp.GetComponent<Rigidbody>().velocity = (camPivot.forward - (camPivot.up / 4)).normalized * 60;
                 temp.GetComponent<RapidShotPellet>().damage *= float.Parse(value);
             }
         }

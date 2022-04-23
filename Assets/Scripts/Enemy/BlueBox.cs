@@ -12,7 +12,7 @@ public class BlueBox : Enemy
     int index;
     public override void HandleMessage(string flag, string value)
     {
-
+        /*
         if (flag == "NAV")
         {
 
@@ -22,7 +22,7 @@ public class BlueBox : Enemy
             LookAtTarget(CurrentGoal);
             MyAgent.SetDestination(CurrentGoal);
         }
-
+        */
     }
     void Start()
     {
@@ -51,9 +51,9 @@ public class BlueBox : Enemy
             if ((this.transform.position - CurrentGoal).magnitude <= 1f)
             {
                 int temp = Random.Range(0, Goals.Count);
-                SendUpdate("NAV", temp.ToString());
+                //SendUpdate("NAV", temp.ToString());
                 CurrentGoal = Goals[temp];
-                LookAtTarget(CurrentGoal);
+                // LookAtTarget(CurrentGoal);
                 MyAgent.SetDestination(CurrentGoal);
 
             }
@@ -61,6 +61,7 @@ public class BlueBox : Enemy
 
             yield return new WaitForSeconds(.05f);
         }
+        yield return new WaitForSeconds(.05f);
 
     }
     // Update is called once per frame
@@ -68,10 +69,12 @@ public class BlueBox : Enemy
     {
 
     }
-
+    
+    /*
     public void LookAtTarget(Vector3 target)
     {
         //Debug.Log("Looking at " + target);
         transform.LookAt(new Vector3(target.x, transform.position.y, target.z));
     }
+    */
 }
